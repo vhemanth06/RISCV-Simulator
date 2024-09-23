@@ -4,6 +4,10 @@
 
 #define MAX_TOKENS 10
 #define MAX_INPUT_SIZE 100 
+int register_value[]={0,0,0,0,0,0,0,0,
+                      0,0,0,0,0,0,0,0,
+                      0,0,0,0,0,0,0,0,
+                      0,0,0,0,0,0,0,0,};
 
 int main() {
     char command[MAX_INPUT_SIZE]; 
@@ -43,7 +47,7 @@ int main() {
                         }    
                     }
                     if (instruction == NULL) continue;
-                    char **tokens = string_split(instruction); 
+                    char **tokens = string_split(instruction);
                 }
                 
            } else if(strcmp(tokens[0],"reg")){
