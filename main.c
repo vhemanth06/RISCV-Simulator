@@ -48,6 +48,37 @@ int main() {
                     }
                     if (instruction == NULL) continue;
                     char **tokens = string_split(instruction);
+                    if (strcmp(tokens[0], "add") == 0) {
+            
+                    } else if (strcmp(tokens[0], "sub") == 0) {
+           
+                    } else if (strcmp(tokens[0], "and") == 0) {
+            
+                    } else if (strcmp(tokens[0], "or") == 0) {
+           
+                    } else if (strcmp(tokens[0], "xor") == 0) {
+           
+                    } else if (strcmp(tokens[0], "sll") == 0) {
+          
+                    } else if (strcmp(tokens[0], "srl") == 0) {
+           
+                    } else if (strcmp(tokens[0], "sra") == 0) {
+           
+                    } else if (strcmp(tokens[0], "addi") == 0) {
+           
+                    } else if (strcmp(tokens[0], "andi") == 0) {
+            
+                    } else if (strcmp(tokens[0], "ori") == 0) {
+            
+                    } else if (strcmp(tokens[0], "xori") == 0) {
+            
+                    } else if (strcmp(tokens[0], "slli") == 0) {
+           
+                    } else if (strcmp(tokens[0], "srli") == 0) {
+            
+                    } else if (strcmp(tokens[0], "srai") == 0) {
+            
+                    }
                 }
                 
            } else if(strcmp(tokens[0],"reg")){
