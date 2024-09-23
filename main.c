@@ -42,8 +42,8 @@ int main() {
                             if (*p == ')') *p = ' ';
                         }    
                     }
-         if (instruction == NULL) continue;
-        char **tokens = string_split(instruction); 
+                    if (instruction == NULL) continue;
+                    char **tokens = string_split(instruction); 
                 }
                 
            } else if(strcmp(tokens[0],"reg")){
