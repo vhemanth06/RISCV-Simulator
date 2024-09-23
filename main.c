@@ -21,7 +21,29 @@ int main() {
                 char line[MAX_INPUT_SIZE];
                 int instr_counter=1;
                 while(fgets(line,sizeof(line),input)!=NULL){
-                    
+                    char *instruction;
+                    char *label;
+                    int size=strlen(line);
+                    char line_copy1[size];
+                    strcpy(line_copy1,line);
+                    char *tokens_for_labels = strtok(line, ":\n\r");
+                    if(ischarinstring(line_copy1,':')==1){
+                        label = tokens_for_labels;
+                        tokens_for_labels = strtok(NULL, ":\n\r");
+                        instruction = tokens_for_labels;
+                    } else {
+                        instruction = tokens_for_labels;
+                        label=NULL;
+                    }    
+                    if(instruction != NULL){
+                        for (char *p = instruction; *p; p++) {
+                            if (*p == ',') *p = ' ';
+                            if (*p == '(') *p = ' ';
+                            if (*p == ')') *p = ' ';
+                        }    
+                    }
+         if (instruction == NULL) continue;
+        char **tokens = string_split(instruction); 
                 }
                 
            } else if(strcmp(tokens[0],"reg")){
