@@ -18,6 +18,12 @@ int main() {
                 if (input == NULL) {
                     printf("input file not found\n");
                 }
+                char line[MAX_INPUT_SIZE];
+                int instr_counter=1;
+                while(fgets(line,sizeof(line),input)!=NULL){
+                    
+                }
+                
            } else if(strcmp(tokens[0],"reg")){
                 if (input == NULL) {
                     printf("input file not found\n");
