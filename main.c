@@ -49,20 +49,68 @@ int main() {
                     if (instruction == NULL) continue;
                     char **tokens = string_split(instruction);
                     if (strcmp(tokens[0], "add") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int rs2 = register_finder(tokens[3]);
+
+                        register_value[rd] == register_value[rs1] +  register_value[rs2];
             
                     } else if (strcmp(tokens[0], "sub") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int rs2 = register_finder(tokens[3]);
+
+                        register_value[rd] == register_value[rs1] -  register_value[rs2];
            
                     } else if (strcmp(tokens[0], "and") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int rs2 = register_finder(tokens[3]);
+
+                        register_value[rd] == register_value[rs1] &  register_value[rs2];
             
                     } else if (strcmp(tokens[0], "or") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int rs2 = register_finder(tokens[3]);
+
+                        register_value[rd] == register_value[rs1] |  register_value[rs2];
            
                     } else if (strcmp(tokens[0], "xor") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int rs2 = register_finder(tokens[3]);
+
+                        register_value[rd] == register_value[rs1] ^  register_value[rs2];
            
                     } else if (strcmp(tokens[0], "sll") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int rs2 = register_finder(tokens[3]);
+                        
+                        if (register_value[rs2] <= 63 && register_value[rs2] >=0){
+                            register_value[rd] == register_value[rs1] <<  register_value[rs2];
+                        }
+
           
                     } else if (strcmp(tokens[0], "srl") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int rs2 = register_finder(tokens[3]);
+
+                        if(register_value[rs2] <= 63 && register_value[rs2] >= 0){
+                            register_value[rd] = (unsigned int) register_value[rs1] >>  register_value[rs2];
+                        }
+
            
                     } else if (strcmp(tokens[0], "sra") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int rs2 = register_finder(tokens[3]);
+
+                        if (register_value[rs2] <= 63 && register_value[rs2] >= 0){
+                            register_value[rd] = register_value[rs1] >>  register_value[rs2];
+                        }
            
                     } else if (strcmp(tokens[0], "addi") == 0) {
            
