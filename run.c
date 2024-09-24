@@ -136,18 +136,18 @@ void run_instruction(char **tokens, long int register_value[],uint64_t mem_addre
         int rs1 = register_finder(tokens[3]);
         int num = atoi(tokens[2]);
 
-        if (num <= 1023 && num >= 1024){
-        long int address = num+register_value[rs1];
-        for(int i=0;i<sizeof(mem_address);i++){
-            if(address==mem_address[i]){
-                register_value[rd]=mem_values[i];
-                break;
-            } else {
-                register_value[rd]=0;
-            }
-        }
+        // if (num <= 1023 && num >= 1024){
+        // long int address = num+register_value[rs1];
+        // for(int i=0;i<sizeof(mem_address);i++){
+        //     if(address==mem_address[i]){
+        //         register_value[rd]=mem_values[i];
+        //         break;
+        //     } else {
+        //         register_value[rd]=0;
+        //     }
+        // }
 
-        }
+        // }
             
     }
 }

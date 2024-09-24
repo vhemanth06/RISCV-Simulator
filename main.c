@@ -46,9 +46,9 @@ int main() {
                 char *array_of_lines[60];
 
                 uint64_t d_address=0x10000;
-                while(fgets(line,sizeof(line),input)!=NULL){
+                // while(fgets(line,sizeof(line),input)!=NULL){
                      
-                }
+                // }
                 while(fgets(line,sizeof(line),input)!=NULL){
                     if(strcmp(line,".data")==0){
                         continue;
@@ -64,16 +64,17 @@ int main() {
 
                     if (line == NULL) continue;
                     char **data=string_split(line);
-                    if(strcmp(data,".dword")==0){
+                    if(strcmp(data[0],".dword")==0){
 
-                    } else if(strcmp(data,".word")==0){
+                    } else if(strcmp(data[0],".word")==0){
 
-                    } else if(strcmp(data,".half")==0){
+                    } else if(strcmp(data[0],".half")==0){
 
-                    } else if(strcmp(data,".byte")==0){
+                    } else if(strcmp(data[0],".byte")==0){
 
                     } 
                 }
+                rewind(input);
                 while(fgets(line,sizeof(line),input)!=NULL){
                     int size=strlen(line);
                     if(strcmp(line,".data")==0 || strcmp(line,".text")==0){
