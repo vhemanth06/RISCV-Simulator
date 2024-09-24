@@ -56,12 +56,12 @@ int main() {
                 int i=0,j=0;
                 uint64_t d_address=0x10000;
                 while(fgets(line,sizeof(line),input)!=NULL){
-                    printf("runcheck\n");
+                    //printf("runcheck\n");
                     char *substrings = strtok(line,"\t\n\r"); 
                     if(substrings!=NULL){
                        strcpy(array_of_lines[i],line);
-                    printf("runcheck1\n");
-                    printf("%s\n",array_of_lines[i]);
+                    //printf("runcheck1\n");
+                    //printf("%s\n",array_of_lines[i]);
                     i++;
                     }
                      
@@ -99,7 +99,7 @@ int main() {
                 // }
                 // rewind(input);
                 while(counter < i){
-                    printf("%s\n",array_of_lines[counter]);
+                    //printf("%s\n",array_of_lines[counter]);
                     int size=strlen(array_of_lines[counter]);
                     
                     // if(line[0]=='.'){
@@ -135,7 +135,7 @@ int main() {
                     }
                     if(strcmp(tokens[0],".dword")==0){
                          if(tokens[1]==NULL){
-                             
+                             //error handling?
                          } else {
                             for(int k=1;tokens[k]!=NULL;k++){
                                 char* endpointer;
@@ -154,16 +154,65 @@ int main() {
                         }
                          counter++;
                     } else if(strcmp(tokens[0],".word")==0){
+                        if (tokens[1] == NULL){
+                            //error handling.
+                        } else{
+                            for (int k = 1; tokens[k] != NULL; k++){
+                                char *endpointer;
+                                long int num = strtol(tokens[k], &endpointer, 0);
+                                int m = 0;
+                                for (m = 0; m < 4; m++){
+                                    mem_address[j + m] = d_address + m;
+                                    mem_values[j + m] = (num >> (m * 8)) & 0xFF;
+                                    printf("0x%llX->0x%X\n",mem_address[j+m],mem_values[j+m]);
+                                }
+                                //printf("%d\n", m);
+                                j = j + 4;
+                                d_address = d_address + 4;
+                            }
+                        }
 
                         counter++;
                     }  else if(strcmp(tokens[0],".half")==0){
+                        if (tokens[1] == NULL){
+                            //error handling.
+                        } else{
+                            for (int k = 1; tokens[k] != NULL; k++){
+                                char *endpointer;
+                                long int num = strtol(tokens[k], &endpointer, 0);
+                                int m = 0;
+                                for (m = 0; m < 2; m++){
+                                    mem_address[j + m] = d_address + m;
+                                    mem_values[j + m] = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%X\n",mem_address[j+m],mem_values[j+m]);
+                                }
+                                j = j + 2;
+                                d_address = d_address + 2;
+                            }
+                        }
 
                         counter++;
                     }  else if(strcmp(tokens[0],".byte")==0){
-
+                        if (tokens[1] == NULL){
+                            //error handling.
+                        } else{
+                            for (int k = 1; tokens[k] != NULL; k++){
+                                char *endpointer;
+                                long int num = strtol(tokens[k], &endpointer, 0);
+                                int m = 0;
+                                for (m = 0; m < 1; m++){
+                                    mem_address[j + m] = d_address + m;
+                                    mem_values[j + m] = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%X\n",mem_address[j+m],mem_values[j+m]);
+                                }
+                                j = j + 1;
+                                d_address = d_address + 1;
+                            }
+                        }
                         counter++;
                     }
                     run_instruction(tokens, register_value,mem_address,mem_values);
+                    counter++;
                     
                 }
                 for (int j = 0; j < MAX_LINES; j++) {
@@ -174,7 +223,13 @@ int main() {
            } else if(strcmp(tokens_comm[0],"reg")==0){
                 if (input == NULL) {
                     printf("input file not found\n");
+                    fclose(input);
                 }
+                printf("Registers:\n");
+                for(int i = 0; i < 32; i++){
+                    printf("x%d = %ld\n", i, register_value[i]);
+                }
+                printf("\n");
            } else if(strcmp(tokens_comm[0],"exit")==0){
                 printf("RISCV Simulator successfully exited\n");
                 return 0;

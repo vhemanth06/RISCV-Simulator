@@ -131,23 +131,101 @@ void run_instruction(char **tokens, long int register_value[],uint64_t mem_addre
             register_value[rd] = register_value[rs1] >> num;
         }
             
+    } else if(strcmp(tokens[0], "lui") == 0){
+        int rd = register_finder(tokens[1]);
+        char *endptr;
+        long int num = strtol(tokens[2], &endptr, 0);
+
+        register_value[rd] = num;
+
     } else if (strcmp(tokens[0], "ld") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[3]);
         int num = atoi(tokens[2]);
+        int found = 0;
+        int64_t result = 0;
 
-        // if (num <= 1023 && num >= 1024){
-        // long int address = num+register_value[rs1];
-        // for(int i=0;i<sizeof(mem_address);i++){
-        //     if(address==mem_address[i]){
-        //         register_value[rd]=mem_values[i];
-        //         break;
-        //     } else {
-        //         register_value[rd]=0;
-        //     }
-        // }
+        uint64_t mem  = (uint64_t)(register_value[rs1] + num);
 
-        // }
+        for (int i = 0; i < 50000; i++){
+            if (mem_address[i] == mem){
+                found = 1;
+                for (int k = 0; k < 8; k++){
+                    result |= (mem_values[i + k] << (k * 8)); 
+                }
+                register_value[rd] = result;
+                break;
+            }
+        }
+        if(found != 1){
+            register_value[rd] = 0;
+        }
             
+    } else if (strcmp(tokens[0], "lw") == 0){
+        int rd = register_finder(tokens[1]);
+        int rs1 = register_finder(tokens[3]);
+        int num = atoi(tokens[2]);
+        int found = 0;
+        int32_t result = 0;
+
+        uint64_t mem = (uint64_t)(register_value[rs1] + num);
+
+        for (int i = 0; i < 50000; i++){
+            if (mem_address[i] == mem){
+                found = 1;
+                for (int k = 0; k < 4; k++){
+                    result |= (mem_values[i + k] << (k * 8));
+                }
+                register_value[rd] = result;
+                break;
+            }
+        }
+        if (found != 1){
+            register_value[0] = 0;
+        }
+    } else if (strcmp(tokens[0], "lh") == 0){
+        int rd = register_finder(tokens[1]);
+        int rs1 = register_finder(tokens[3]);
+        int num = atoi(tokens[2]);
+        int found = 0;
+        int16_t result = 0;
+
+        uint64_t mem = (uint64_t)(register_value[rs1] + num);
+
+        for (int i = 0; i < 50000; i++){
+            if (mem_address[i] == mem){
+                found = 1;
+                for (int k = 0; k < 2; k++){
+                    result |= (mem_values[i + k] << (k * 8));
+                }
+                register_value[rd] = result;
+                break;
+            }
+        }
+        if (found != 1){
+            register_value[0] = 0;
+        }
+    } else if (strcmp(tokens[0], "lb") == 0){
+        int rd = register_finder(tokens[1]);
+        int rs1 = register_finder(tokens[3]);
+        int num = atoi(tokens[2]);
+        int found = 0;
+        int8_t result = 0;
+
+        uint64_t mem = (uint64_t)(register_value[rs1] + num);
+
+        for (int i = 0; i < 50000; i++){
+            if (mem_address[i] == mem){
+                found = 1;
+                for (int k = 0; k < 1; k++){
+                    result |= (mem_values[i + k] << (k * 8));
+                }
+                register_value[rd] = result;
+                break;
+            }
+        }
+        if (found != 1){
+            register_value[0] = 0;
+        }
     }
 }
