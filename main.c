@@ -113,18 +113,67 @@ int main() {
                         }
            
                     } else if (strcmp(tokens[0], "addi") == 0) {
-           
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int num = atoi(tokens[3]);
+
+                        if (num <= (1U << (63)) - 1 && num >= -(1U << (63))){
+                            register_value[rd] = register_value[rs1] + num;
+                        }
+
                     } else if (strcmp(tokens[0], "andi") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int num = atoi(tokens[3]);
+
+                        if (num <= (1U << (63)) - 1 && num >= -(1U << (63))){
+                            register_value[rd] = register_value[rs1] & num;
+                        }
             
                     } else if (strcmp(tokens[0], "ori") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int num = atoi(tokens[3]);
+
+                        if (num <= (1U << (63)) - 1 && num >= -(1U << (63))){
+                            register_value[rd] = register_value[rs1] | num;
+                        }
             
                     } else if (strcmp(tokens[0], "xori") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int num = atoi(tokens[3]);
+
+                        if (num <= (1U << (63)) - 1 && num >= -(1U << (63))){
+                            register_value[rd] = register_value[rs1] ^ num;
+                        }
             
                     } else if (strcmp(tokens[0], "slli") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int num = atoi(tokens[3]);
+
+                        if (num <= 63 && num >= 0){
+                            register_value[rd] = register_value[rs1] << num;
+                        }
            
                     } else if (strcmp(tokens[0], "srli") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int num = atoi(tokens[3]);
+
+                        if (num <= 63 && num >= 0){
+                            register_value[rd] = (unsigned int) register_value[rs1] >> num;
+                        }
             
                     } else if (strcmp(tokens[0], "srai") == 0) {
+                        int rd = register_finder(tokens[1]);
+                        int rs1 = register_finder(tokens[2]);
+                        int num = atoi(tokens[3]);
+
+                        if (num <= 63 && num >= 0){
+                            register_value[rd] = register_value[rs1] >> num;
+                        }
             
                     }
                 }
