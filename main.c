@@ -117,7 +117,7 @@ int main() {
                         int rs1 = register_finder(tokens[2]);
                         int num = atoi(tokens[3]);
 
-                        if (num <= (1U << (63)) - 1 && num >= -(1U << (63))){
+                        if (num <= 1023 && num >= -1024){
                             register_value[rd] = register_value[rs1] + num;
                         }
 
@@ -126,7 +126,7 @@ int main() {
                         int rs1 = register_finder(tokens[2]);
                         int num = atoi(tokens[3]);
 
-                        if (num <= (1U << (63)) - 1 && num >= -(1U << (63))){
+                        if (num <= 1023 && num >= -1024){
                             register_value[rd] = register_value[rs1] & num;
                         }
             
@@ -135,7 +135,7 @@ int main() {
                         int rs1 = register_finder(tokens[2]);
                         int num = atoi(tokens[3]);
 
-                        if (num <= (1U << (63)) - 1 && num >= -(1U << (63))){
+                        if (num <= 1023 && num >= -1024){
                             register_value[rd] = register_value[rs1] | num;
                         }
             
@@ -144,7 +144,7 @@ int main() {
                         int rs1 = register_finder(tokens[2]);
                         int num = atoi(tokens[3]);
 
-                        if (num <= (1U << (63)) - 1 && num >= -(1U << (63))){
+                        if (num <= 1023 && num >= -1024){
                             register_value[rd] = register_value[rs1] ^ num;
                         }
             
