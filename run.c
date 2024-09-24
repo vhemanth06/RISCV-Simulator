@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 
-void run_instruction(char **tokens, long int register_value[],uint64_t mem_address[],long int mem_values[]){
+void run_instruction(char **tokens, long int register_value[],uint64_t mem_address[],int64_t mem_values[]){
     if (strcmp(tokens[0], "add") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);

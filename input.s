@@ -1,1 +1,4 @@
-add x1,x2,x3
+.data
+.dword 0x6123456789abcdef,-1
+.dword 0x101010
+.text
