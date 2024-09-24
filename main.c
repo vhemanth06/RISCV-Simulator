@@ -2,10 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include "functions.h"
+#include "run.h"
 
 #define MAX_TOKENS 10
 #define MAX_INPUT_SIZE 100 
-int register_value[]={0,0,0,0,0,0,0,0,
+long int register_value[]={0,0,0,0,0,0,0,0,
                       0,0,0,0,0,0,0,0,
                       0,0,0,0,0,0,0,0,
                       0,0,0,0,0,0,0,0,};
@@ -16,11 +17,11 @@ int main() {
         fgets(command,sizeof(command),stdin);   
         FILE *input;   
         char **tokens_comm = string_split(command);
-        printf("%s",tokens_comm[0]);
+        //printf("%s",tokens_comm[0]);
            if(strcmp(tokens_comm[0], "load") == 0){
-            printf("%s\n",tokens_comm[0]);
+            //printf("%s\n",tokens_comm[0]);
             input = fopen(tokens_comm[1], "r");
-            printf("runcheck1\n");
+            //printf("runcheck1\n");
             if(input==NULL){
                 printf("error opening file\n");
                 fclose(input);
@@ -31,7 +32,7 @@ int main() {
                     printf("input file not found\n");
                     fclose(input);
                 }
-                printf("runcheck2\n");
+                //printf("runcheck2\n");
                 char line[MAX_INPUT_SIZE];
                 int instr_counter=1;
                 while(fgets(line,sizeof(line),input)!=NULL){
@@ -58,135 +59,7 @@ int main() {
                     }
                     if (instruction == NULL) continue;
                     char **tokens = string_split(instruction);
-                    if (strcmp(tokens[0], "add") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int rs2 = register_finder(tokens[3]);
-
-                        register_value[rd] = register_value[rs1] +  register_value[rs2];
-                        printf("%d+%d=%d\n",register_value[rs1],register_value[rs2],register_value[rd]);
-            
-                    } else if (strcmp(tokens[0], "sub") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int rs2 = register_finder(tokens[3]);
-
-                        register_value[rd] = register_value[rs1] -  register_value[rs2];
-           
-                    } else if (strcmp(tokens[0], "and") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int rs2 = register_finder(tokens[3]);
-
-                        register_value[rd] = register_value[rs1] &  register_value[rs2];
-            
-                    } else if (strcmp(tokens[0], "or") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int rs2 = register_finder(tokens[3]);
-
-                        register_value[rd] = register_value[rs1] |  register_value[rs2];
-           
-                    } else if (strcmp(tokens[0], "xor") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int rs2 = register_finder(tokens[3]);
-
-                        register_value[rd] = register_value[rs1] ^  register_value[rs2];
-           
-                    } else if (strcmp(tokens[0], "sll") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int rs2 = register_finder(tokens[3]);
-                        
-                        if (register_value[rs2] <= 63 && register_value[rs2] >=0){
-                            register_value[rd] = register_value[rs1] <<  register_value[rs2];
-                        }
-
-          
-                    } else if (strcmp(tokens[0], "srl") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int rs2 = register_finder(tokens[3]);
-
-                        if(register_value[rs2] <= 63 && register_value[rs2] >= 0){
-                            register_value[rd] = (unsigned int) register_value[rs1] >>  register_value[rs2];
-                        }
-
-           
-                    } else if (strcmp(tokens[0], "sra") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int rs2 = register_finder(tokens[3]);
-
-                        if (register_value[rs2] <= 63 && register_value[rs2] >= 0){
-                            register_value[rd] = register_value[rs1] >>  register_value[rs2];
-                        }
-           
-                    } else if (strcmp(tokens[0], "addi") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int num = atoi(tokens[3]);
-
-                        if (num <= 1023 && num >= -1024){
-                            register_value[rd] = register_value[rs1] + num;
-                        }
-
-                    } else if (strcmp(tokens[0], "andi") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int num = atoi(tokens[3]);
-
-                        if (num <= 1023 && num >= -1024){
-                            register_value[rd] = register_value[rs1] & num;
-                        }
-            
-                    } else if (strcmp(tokens[0], "ori") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int num = atoi(tokens[3]);
-
-                        if (num <= 1023 && num >= -1024){
-                            register_value[rd] = register_value[rs1] | num;
-                        }
-            
-                    } else if (strcmp(tokens[0], "xori") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int num = atoi(tokens[3]);
-
-                        if (num <= 1023 && num >= -1024){
-                            register_value[rd] = register_value[rs1] ^ num;
-                        }
-            
-                    } else if (strcmp(tokens[0], "slli") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int num = atoi(tokens[3]);
-
-                        if (num <= 63 && num >= 0){
-                            register_value[rd] = register_value[rs1] << num;
-                        }
-           
-                    } else if (strcmp(tokens[0], "srli") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int num = atoi(tokens[3]);
-
-                        if (num <= 63 && num >= 0){
-                            register_value[rd] = (unsigned int) register_value[rs1] >> num;
-                        }
-            
-                    } else if (strcmp(tokens[0], "srai") == 0) {
-                        int rd = register_finder(tokens[1]);
-                        int rs1 = register_finder(tokens[2]);
-                        int num = atoi(tokens[3]);
-
-                        if (num <= 63 && num >= 0){
-                            register_value[rd] = register_value[rs1] >> num;
-                        }
-            
-                    }
+                    run_instruction(tokens, register_value);
                 }
                 
            } else if(strcmp(tokens_comm[0],"reg")==0){
