@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "functions.h"
 
 #define MAX_TOKENS 10
@@ -14,14 +15,23 @@ int main() {
     while (1) {  
         fgets(command,sizeof(command),stdin);   
         FILE *input;   
-        char **tokens = string_split(command);
-           if(strcmp(tokens[0], "load") == 0){
-            //printf("%s\n",tokens[0]);
-            input = fopen(tokens[1], "r");
-           } else if(strcmp(tokens[0],"run")){
+        char **tokens_comm = string_split(command);
+        printf("%s",tokens_comm[0]);
+           if(strcmp(tokens_comm[0], "load") == 0){
+            printf("%s\n",tokens_comm[0]);
+            input = fopen(tokens_comm[1], "r");
+            printf("runcheck1\n");
+            if(input==NULL){
+                printf("error opening file\n");
+                fclose(input);
+            }
+            continue;
+           } else if(strcmp(tokens_comm[0],"run")==0){
                 if (input == NULL) {
                     printf("input file not found\n");
+                    fclose(input);
                 }
+                printf("runcheck2\n");
                 char line[MAX_INPUT_SIZE];
                 int instr_counter=1;
                 while(fgets(line,sizeof(line),input)!=NULL){
@@ -53,35 +63,36 @@ int main() {
                         int rs1 = register_finder(tokens[2]);
                         int rs2 = register_finder(tokens[3]);
 
-                        register_value[rd] == register_value[rs1] +  register_value[rs2];
+                        register_value[rd] = register_value[rs1] +  register_value[rs2];
+                        printf("%d+%d=%d\n",register_value[rs1],register_value[rs2],register_value[rd]);
             
                     } else if (strcmp(tokens[0], "sub") == 0) {
                         int rd = register_finder(tokens[1]);
                         int rs1 = register_finder(tokens[2]);
                         int rs2 = register_finder(tokens[3]);
 
-                        register_value[rd] == register_value[rs1] -  register_value[rs2];
+                        register_value[rd] = register_value[rs1] -  register_value[rs2];
            
                     } else if (strcmp(tokens[0], "and") == 0) {
                         int rd = register_finder(tokens[1]);
                         int rs1 = register_finder(tokens[2]);
                         int rs2 = register_finder(tokens[3]);
 
-                        register_value[rd] == register_value[rs1] &  register_value[rs2];
+                        register_value[rd] = register_value[rs1] &  register_value[rs2];
             
                     } else if (strcmp(tokens[0], "or") == 0) {
                         int rd = register_finder(tokens[1]);
                         int rs1 = register_finder(tokens[2]);
                         int rs2 = register_finder(tokens[3]);
 
-                        register_value[rd] == register_value[rs1] |  register_value[rs2];
+                        register_value[rd] = register_value[rs1] |  register_value[rs2];
            
                     } else if (strcmp(tokens[0], "xor") == 0) {
                         int rd = register_finder(tokens[1]);
                         int rs1 = register_finder(tokens[2]);
                         int rs2 = register_finder(tokens[3]);
 
-                        register_value[rd] == register_value[rs1] ^  register_value[rs2];
+                        register_value[rd] = register_value[rs1] ^  register_value[rs2];
            
                     } else if (strcmp(tokens[0], "sll") == 0) {
                         int rd = register_finder(tokens[1]);
@@ -89,7 +100,7 @@ int main() {
                         int rs2 = register_finder(tokens[3]);
                         
                         if (register_value[rs2] <= 63 && register_value[rs2] >=0){
-                            register_value[rd] == register_value[rs1] <<  register_value[rs2];
+                            register_value[rd] = register_value[rs1] <<  register_value[rs2];
                         }
 
           
@@ -178,13 +189,13 @@ int main() {
                     }
                 }
                 
-           } else if(strcmp(tokens[0],"reg")){
+           } else if(strcmp(tokens_comm[0],"reg")==0){
                 if (input == NULL) {
                     printf("input file not found\n");
                 }
-           } else if(strcmp(tokens[0],"exit")){
+           } else if(strcmp(tokens_comm[0],"exit")==0){
                 printf("RISCV Simulator successfully exited\n");
-                break;
+                return 0;
            }
     }
     return 0;
