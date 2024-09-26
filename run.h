@@ -2,5 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
-void run_instruction(char **tokens, long int register_value[],uint64_t mem_address[],int64_t mem_values[]);
+typedef struct {
+    uint64_t address;
+    uint8_t value;
+} MemEntry;
+void run_instruction(char **tokens, long int register_value[],MemEntry  *mem_entries,int j);

@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#define MAX_ADDRESS 0x50000
+typedef struct {
+    uint64_t address;
+    uint8_t value;
+} MemEntry;
 
-void run_instruction(char **tokens, long int register_value[],uint64_t mem_address[],int64_t mem_values[]){
+void run_instruction(char **tokens, long int register_value[],MemEntry  *mem_entries,int j){
     if (strcmp(tokens[0], "add") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
@@ -136,9 +141,10 @@ void run_instruction(char **tokens, long int register_value[],uint64_t mem_addre
         char *endptr;
         long int num = strtol(tokens[2], &endptr, 0);
 
-        register_value[rd] = num;
+        register_value[rd] = num<<12;
 
     } else if (strcmp(tokens[0], "ld") == 0) {
+        printf("runcheck\n");
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[3]);
         int num = atoi(tokens[2]);
@@ -146,13 +152,14 @@ void run_instruction(char **tokens, long int register_value[],uint64_t mem_addre
         int64_t result = 0;
 
         uint64_t mem  = (uint64_t)(register_value[rs1] + num);
-
-        for (int i = 0; i < 50000; i++){
-            if (mem_address[i] == mem){
+        printf("runcheck\n");
+        for (int i = 0; i<MAX_ADDRESS; i++){
+            if (mem_entries[i].address == mem){
                 found = 1;
                 for (int k = 0; k < 8; k++){
-                    result |= (mem_values[i + k] << (k * 8)); 
+                    result |= ((int64_t)mem_entries[i + k].value << (k * 8)); 
                 }
+                printf("%ld\n",result);
                 register_value[rd] = result;
                 break;
             }
@@ -170,11 +177,11 @@ void run_instruction(char **tokens, long int register_value[],uint64_t mem_addre
 
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
 
-        for (int i = 0; i < 50000; i++){
-            if (mem_address[i] == mem){
+        for (int i = 0; i<MAX_ADDRESS; i++){
+            if (mem_entries[i].address == mem){
                 found = 1;
                 for (int k = 0; k < 4; k++){
-                    result |= (mem_values[i + k] << (k * 8));
+                    result |= ((int64_t)mem_entries[i + k].value << (k * 8));
                 }
                 register_value[rd] = result;
                 break;
@@ -192,11 +199,11 @@ void run_instruction(char **tokens, long int register_value[],uint64_t mem_addre
 
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
 
-        for (int i = 0; i < 50000; i++){
-            if (mem_address[i] == mem){
+        for (int i = 0; i<MAX_ADDRESS; i++){
+            if (mem_entries[i].address == mem){
                 found = 1;
                 for (int k = 0; k < 2; k++){
-                    result |= (mem_values[i + k] << (k * 8));
+                    result |= ((int64_t)mem_entries[i + k].value << (k * 8));
                 }
                 register_value[rd] = result;
                 break;
@@ -214,11 +221,11 @@ void run_instruction(char **tokens, long int register_value[],uint64_t mem_addre
 
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
 
-        for (int i = 0; i < 50000; i++){
-            if (mem_address[i] == mem){
+        for (int i = 0; i<MAX_ADDRESS; i++){
+            if (mem_entries[i].address == mem){
                 found = 1;
                 for (int k = 0; k < 1; k++){
-                    result |= (mem_values[i + k] << (k * 8));
+                    result |= ((int64_t)mem_entries[i + k].value << (k * 8));
                 }
                 register_value[rd] = result;
                 break;
