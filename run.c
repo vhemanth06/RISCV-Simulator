@@ -234,5 +234,77 @@ void run_instruction(char **tokens, long int register_value[],MemEntry  *mem_ent
         if (found != 1){
             register_value[0] = 0;
         }
+    } else if (strcmp(tokens[0], "lwu") == 0){
+        int rd = register_finder(tokens[1]);
+        int rs1 = register_finder(tokens[3]);
+        //printf("%s\n",tokens[2]);
+        int num = atoi(tokens[2]);
+        int found = 0;
+        uint32_t result = 0;
+
+        uint64_t mem = (uint64_t)(register_value[rs1] + num);
+        //printf("0x%x with num=%d\n",mem,num);
+        for (int i = 0; i<MAX_ADDRESS; i++){
+            if (mem_entries[i].address == mem){
+                found = 1;
+                for (int k = 0; k < 4; k++){
+                    //printf("%02x\n",mem_entries[i+k].value);
+                    result |= ((int64_t)mem_entries[i + k].value << (k * 8));
+                }
+                register_value[rd] = result;
+                break;
+            }
+        }
+        if (found != 1){
+            register_value[0] = 0;
+        }
+    } else if (strcmp(tokens[0], "lhu") == 0){
+        int rd = register_finder(tokens[1]);
+        int rs1 = register_finder(tokens[3]);
+        //printf("%s\n",tokens[2]);
+        int num = atoi(tokens[2]);
+        int found = 0;
+        uint16_t result = 0;
+
+        uint64_t mem = (uint64_t)(register_value[rs1] + num);
+        //printf("0x%x with num=%d\n",mem,num);
+        for (int i = 0; i<MAX_ADDRESS; i++){
+            if (mem_entries[i].address == mem){
+                found = 1;
+                for (int k = 0; k < 2; k++){
+                    //printf("%02x\n",mem_entries[i+k].value);
+                    result |= ((int64_t)mem_entries[i + k].value << (k * 8));
+                }
+                register_value[rd] = result;
+                break;
+            }
+        }
+        if (found != 1){
+            register_value[0] = 0;
+        }
+    } else if (strcmp(tokens[0], "lbu") == 0){
+        int rd = register_finder(tokens[1]);
+        int rs1 = register_finder(tokens[3]);
+        //printf("%s\n",tokens[2]);
+        int num = atoi(tokens[2]);
+        int found = 0;
+        uint8_t result = 0;
+
+        uint64_t mem = (uint64_t)(register_value[rs1] + num);
+        //printf("0x%x with num=%d\n",mem,num);
+        for (int i = 0; i<MAX_ADDRESS; i++){
+            if (mem_entries[i].address == mem){
+                found = 1;
+                for (int k = 0; k < 1; k++){
+                    //printf("%02x\n",mem_entries[i+k].value);
+                    result |= ((int64_t)mem_entries[i + k].value << (k * 8));
+                }
+                register_value[rd] = result;
+                break;
+            }
+        }
+        if (found != 1){
+            register_value[0] = 0;
+        }
     }
 }
