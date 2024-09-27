@@ -19,7 +19,7 @@ long int register_value[]={0,0,0,0,0,0,0,0,
 
 
 MemEntry *mem_entries;
-
+int pc_counter;
 
 int main() {
     mem_entries = malloc(MAX_ADDRESS * sizeof(MemEntry));
@@ -28,6 +28,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
     char command[MAX_INPUT_SIZE]; 
+    
     while (1) {  
         fgets(command,sizeof(command),stdin);   
         FILE *input;   
@@ -46,6 +47,7 @@ int main() {
                 mem_entries[k].address=k;
                 mem_entries[k].value=0;
             }
+            
             continue;
            } else if(strcmp(tokens_comm[0],"run")==0){
                 if (input == NULL) {
@@ -65,6 +67,7 @@ int main() {
                 }
                 int i=0;
                 uint64_t d_address=0x10000;
+                pc_counter=0;
                 while(fgets(line,sizeof(line),input)!=NULL){
                     //printf("runcheck\n");
                     char *substrings = strtok(line,"\t\n\r"); 
@@ -74,6 +77,7 @@ int main() {
                        //printf("%s\n",array_of_lines[i]);
                        i++;
                     }
+                    
                      
                     if(i>=60){
                         break;
@@ -111,7 +115,7 @@ int main() {
                 while(counter < i){
                     //printf("%s\n",array_of_lines[counter]);
                     int size=strlen(array_of_lines[counter]);
-                    
+                    //printf("pc at while%d\n",pc_counter);
                     // if(line[0]=='.'){
                     //     char line_copy2[size];
                     //     strcpy(line_copy2,line);
@@ -139,6 +143,7 @@ int main() {
                     }
                     if (instruction == NULL) continue;
                     char **tokens = string_split(instruction);
+                    
                     if(strcmp(tokens[0],".data")==0 || strcmp(tokens[0],".text")==0){
                         counter++;
                         continue;
@@ -150,7 +155,7 @@ int main() {
                             for(int k=1;tokens[k]!=NULL;k++){
                                 char* endpointer;
                                 long int num = strtol(tokens[k],&endpointer,0);
-                                printf("%lX\n",num);
+                                //printf("%lX\n",num);
                                 int m = 0;
                                 for ( m = 0; m < 8; m++) {
                                     // mem_entries[j+m].address=d_address+m;
@@ -159,7 +164,7 @@ int main() {
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
                                     //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
                                 }
-                                printf("%d\n", m);
+                                //printf("%d\n", m);
                                 //j=j+8;
                                 d_address=d_address+8;  
                             }
@@ -229,7 +234,7 @@ int main() {
                         }
                         counter++;
                     }
-                    run_instruction(tokens, register_value,mem_entries);
+                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter);
                     counter++;
                     
                 }

@@ -6,4 +6,4 @@ typedef struct {
     uint64_t address;
     uint8_t value;
 } MemEntry;
-void run_instruction(char **tokens, long int register_value[],MemEntry  *mem_entries);
+void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter);
