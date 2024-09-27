@@ -42,9 +42,12 @@ int main() {
                 printf("error opening file\n");
                 fclose(input);
             }
+            for(int k=0;k<MAX_ADDRESS;k++){
+                mem_entries[k].address=k;
+                mem_entries[k].value=0;
+            }
             continue;
            } else if(strcmp(tokens_comm[0],"run")==0){
-            
                 if (input == NULL) {
                     printf("input file not found\n");
                     fclose(input);
@@ -60,16 +63,16 @@ int main() {
                     return 1; // Exit on allocation failure
                     }
                 }
-                int i=0,j=0;
+                int i=0;
                 uint64_t d_address=0x10000;
                 while(fgets(line,sizeof(line),input)!=NULL){
                     //printf("runcheck\n");
                     char *substrings = strtok(line,"\t\n\r"); 
                     if(substrings!=NULL){
                        strcpy(array_of_lines[i],line);
-                    //printf("runcheck1\n");
-                    //printf("%s\n",array_of_lines[i]);
-                    i++;
+                       //printf("runcheck1\n");
+                       //printf("%s\n",array_of_lines[i]);
+                       i++;
                     }
                      
                     if(i>=60){
@@ -150,12 +153,14 @@ int main() {
                                 printf("%lX\n",num);
                                 int m = 0;
                                 for ( m = 0; m < 8; m++) {
-                                    mem_entries[j+m].address=d_address+m;
-                                    mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
-                                    printf("0x%llX->0x%02X\n",mem_entries[j+m].address,mem_entries[j+m].value);
+                                    // mem_entries[j+m].address=d_address+m;
+                                    // mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
+                                    //mem_entries[j+m].address=d_address+m;
+                                    mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
                                 }
                                 printf("%d\n", m);
-                                j=j+8;
+                                //j=j+8;
                                 d_address=d_address+8;  
                             }
                         }
@@ -169,12 +174,14 @@ int main() {
                                 long int num = strtol(tokens[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 4; m++){
-                                    mem_entries[j + m].address = d_address + m;
-                                    mem_entries[j + m].value = (num >> (m * 8)) & 0xFF;
-                                    printf("0x%llX->0x%X\n",mem_entries[j + m].address,mem_entries[j + m].value);
+                                   // mem_entries[j+m].address=d_address+m;
+                                    // mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
+                                    //mem_entries[j+m].address=d_address+m;
+                                    mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
                                 }
                                 //printf("%d\n", m);
-                                j = j + 4;
+                                //j = j + 4;
                                 d_address = d_address + 4;
                             }
                         }
@@ -189,11 +196,13 @@ int main() {
                                 long int num = strtol(tokens[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 2; m++){
-                                    mem_entries[j + m].address = d_address + m;
-                                    mem_entries[j + m].value = (num >> (m * 8)) & 0xFF;
-                                    //printf("0x%llX->0x%X\n",mem_entries[j + m].address,mem_entries[j + m].value);
+                                    // mem_entries[j+m].address=d_address+m;
+                                    // mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
+                                    //mem_entries[j+m].address=d_address+m;
+                                    mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
                                 }
-                                j = j + 2;
+                                //j = j + 2;
                                 d_address = d_address + 2;
                             }
                         }
@@ -208,17 +217,19 @@ int main() {
                                 long int num = strtol(tokens[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 1; m++){
-                                    mem_entries[j + m].address = d_address + m;
-                                    mem_entries[j + m].value = (num >> (m * 8)) & 0xFF;
-                                    //printf("0x%llX->0x%X\n",mem_entries[j + m].address,mem_entries[j + m].value);
+                                    // mem_entries[j+m].address=d_address+m;
+                                    // mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
+                                    //mem_entries[j+m].address=d_address+m;
+                                    mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
                                 }
-                                j = j + 1;
+                                //j = j + 1;
                                 d_address = d_address + 1;
                             }
                         }
                         counter++;
                     }
-                    run_instruction(tokens, register_value,mem_entries,j);
+                    run_instruction(tokens, register_value,mem_entries);
                     counter++;
                     
                 }
@@ -226,7 +237,7 @@ int main() {
                 //         //printf("Line %d: %s\n", j + 1, array_of_lines[j]);
                 //         free(array_of_lines[j]); // Free the allocated memory
                 //     }
-                } else if(strcmp(tokens_comm[0],"reg")==0){
+                } else if(strcmp(tokens_comm[0],"regs")==0){
                 if (input == NULL) {
                     printf("input file not found\n");
                     fclose(input);
@@ -239,6 +250,14 @@ int main() {
            } else if(strcmp(tokens_comm[0],"exit")==0){
                 printf("RISCV Simulator successfully exited\n");
                 return 0;
+           } else if(strcmp(tokens_comm[0],"mem")==0){
+            char* endpointer;
+                uint64_t mem=strtoul(tokens_comm[1],&endpointer,16);
+                int index=0;
+                int count=atoi(tokens_comm[2]);
+                for(int k=0;k<count;k++){
+                    printf("Memory[0x%05X] = 0x%02X\n",mem_entries[mem+k].address,mem_entries[mem+k].value);
+                }
            }
     }
     free(mem_entries);
