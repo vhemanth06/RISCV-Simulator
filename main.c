@@ -29,6 +29,9 @@ int main() {
     }
     char command[MAX_INPUT_SIZE];
     int stepper = 0;
+    int *counter_ptr;
+    int counter = 0;
+    counter_ptr = &counter;
     
     while (1) {  
         fgets(command,sizeof(command),stdin);   
@@ -36,6 +39,8 @@ int main() {
         char **tokens_comm = string_split(command);
         //printf("%s",tokens_comm[0]);
            if(strcmp(tokens_comm[0], "load") == 0){
+            pc_counter=0;
+            counter=0;
             //printf("%s\n",tokens_comm[0]);
             input = fopen(tokens_comm[1], "r");
             memcpy(register_value,default_register_value,sizeof(register_value));
@@ -57,7 +62,6 @@ int main() {
                 }
                 //printf("runcheck2\n");
                 char line[MAX_INPUT_SIZE];
-                int counter=0;
                 char *array_of_lines[MAX_LINES];
                 for (int k = 0; k < MAX_LINES; k++) {
                      array_of_lines[k] = malloc(MAX_INPUT_SIZE * sizeof(char));
@@ -79,7 +83,7 @@ int main() {
                     label_names[label_position_iter] = strdup(label_selector);
                     label_line_numbers[label_position_iter] = line_iterater;
                     label_position_iter++;
-                }
+                    }
                 line_iterater++;
                 }
                 rewind(input);
@@ -92,8 +96,6 @@ int main() {
                        //printf("%s\n",array_of_lines[i]);
                        i++;
                     }
-                    
-                     
                     if(i>=60){
                         break;
                     }
@@ -128,6 +130,7 @@ int main() {
                 // }
                 // rewind(input);
                 while(counter < i){
+                    //printf("xs ios %d\n", counter);
                     //printf("%s\n",array_of_lines[counter]);
                     int size=strlen(array_of_lines[counter]);
                     //printf("pc at while%d\n",pc_counter);
@@ -249,8 +252,10 @@ int main() {
                         }
                         counter++;
                     }
-                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers);
+                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, counter_ptr);
                     counter++;
+                    //printf("%d\n", counter);
+                    //printf("ptr is %d\n", *counter_ptr);
                     
                 }
                 // for (int j = 0; array_of_lines!=NULL; j++) {
@@ -279,6 +284,7 @@ int main() {
                     printf("Memory[0x%05X] = 0x%02X\n",mem_entries[mem+k].address,mem_entries[mem+k].value);
                 }
            } else if (strcmp(tokens_comm[0], "step") == 0){
+            stepper = counter;
                 //printf("%d\n", stepper);
                 if (input == NULL) {
                     printf("input file not found\n");
@@ -325,7 +331,7 @@ int main() {
                     }
                     if (stepper == 0){
                         if (strcmp(substrings, ".text") == 0) {
-                        stepper = i; 
+                            stepper = i; 
                             continue; 
                         }
                     }
@@ -364,6 +370,7 @@ int main() {
                     if(strcmp(tokens[0],".data")==0 || strcmp(tokens[0],".text")==0){
                         //stepper++;
                         //printf("%d\n", stepper);
+                        //counter++;
                         continue;
                     }
                     if(strcmp(tokens[0],".dword")==0){
@@ -388,6 +395,7 @@ int main() {
                             }
                         }
                          //stepper++;
+                         //counter++;
                     } else if(strcmp(tokens[0],".word")==0){
                         if (tokens[1] == NULL){
                             //error handling.
@@ -410,6 +418,7 @@ int main() {
                         }
 
                         //stepper++;
+                        //counter++;
                     }  else if(strcmp(tokens[0],".half")==0){
                         if (tokens[1] == NULL){
                             //error handling.
@@ -431,6 +440,7 @@ int main() {
                         }
 
                         //stepper++;
+                        //counter++;
                     }  else if(strcmp(tokens[0],".byte")==0){
                         if (tokens[1] == NULL){
                             //error handling.
@@ -451,10 +461,13 @@ int main() {
                             }
                         }
                         //stepper++;
+                        //counter++;
                     }
-                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers);
+                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, counter_ptr);
                     stepper++;
-                    //printf("%d\n", stepper);      
+                    counter = stepper;
+                    printf("%d\n", stepper);
+                    printf("%d\n", counter);      
            }
     }
     free(mem_entries);
