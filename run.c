@@ -8,7 +8,8 @@ typedef struct {
     uint8_t value;
 } MemEntry;
 
-void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers, int *counter_ptr){
+void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter){
+    //printf("%s for line and %s for token0\n",line,tokens[0]);
     if (strcmp(tokens[0], "add") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
@@ -294,11 +295,33 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
     } else if (strcmp(tokens[0], "beq") == 0){
         int rs1 = register_finder(tokens[1]);
         int rs2 = register_finder(tokens[2]);
-        int imm = atoi(tokens[3]);
+        int index=-1;
+        int imm;
+
+        for(int k=0;k<label_position_iter;k++){
+                   if(strcmp(tokens[3],label_names[k])==0){
+                        index=label_line_numbers[k];
+                        break;
+                    }
+        }
+        if (index!=-1){
+                imm=((index)-(*counter_ptr))*4;
+            }  
+        if(index == -1 && non_int_char_finder(tokens[3])==0 ){
+                imm=atoi(tokens[3]);
+            }
+         
+            // if(index == -1 && non_int_char_finder(tokens[3])==1){
+            //     printf("Error in line %d:no such label exists\n",line_iterater2+1);
+            //     fprintf(output,"\n");
+            //     line_iterater2=line_iterater2+1;
+            //     continue;
+            // }
+        //printf("%ld for %d,  %ld for %d\n", register_value[rs1],rs1, register_value[rs2],rs2);
         if (register_value[rs1] == register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
-            //printf("val is %d\n", *counter_ptr);
+            //printf("val is %d with imm=%d\n", *counter_ptr,imm);
             *counter_ptr = *counter_ptr + (imm/4);
             (*counter_ptr)--;
             //printf("val is %d\n", *counter_ptr);
@@ -310,7 +333,21 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
     } else if (strcmp(tokens[0], "bne") == 0){
         int rs1 = register_finder(tokens[1]);
         int rs2 = register_finder(tokens[2]);
-        int imm = atoi(tokens[3]);
+        int index=-1;
+        int imm;
+
+        for(int k=0;k<label_position_iter;k++){
+                   if(strcmp(tokens[3],label_names[k])==0){
+                        index=label_line_numbers[k];
+                        break;
+                    }
+        }
+        if (index!=-1){
+                imm=((index)-(*counter_ptr))*4;
+            }  
+        if(index == -1 && non_int_char_finder(tokens[3])==0 ){
+                imm=atoi(tokens[3]);
+            }
         if (register_value[rs1] != register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;

@@ -21,6 +21,18 @@ long int register_value[]={0,0,0,0,0,0,0,0,
 MemEntry *mem_entries;
 int pc_counter = 0;
 
+char* deepCopyString(char* str) {
+    // Allocate memory for the new string (+1 for the null terminator)
+    char* newStr = (char*)malloc(strlen(str) + 1);
+    if (newStr == NULL) {
+        // Handle memory allocation failure
+        return NULL;
+    }
+    
+    // Copy the original string into the new memory
+    strcpy(newStr, str);
+    return newStr;
+}
 int main() {
     mem_entries = malloc(MAX_ADDRESS * sizeof(MemEntry));
     if (mem_entries == NULL) {
@@ -143,7 +155,8 @@ int main() {
                     
                     char line_copy1[size];
                     strcpy(line_copy1,array_of_lines[counter]);
-                    char *tokens_for_labels = strtok(array_of_lines[counter], ":\n\r");
+                    char *copy=deepCopyString(array_of_lines[counter]);
+                    char *tokens_for_labels = strtok(copy, ":\n\r");
                     if(ischarinstring(line_copy1,':')==1){
                         label = tokens_for_labels;
                         tokens_for_labels = strtok(NULL, ":\n\r");
@@ -151,7 +164,10 @@ int main() {
                     } else {
                         instruction = tokens_for_labels;
                         label=NULL;
-                    }    
+                    }  
+                    //int size2=strlen(instruction);
+                    char *instruction_copy;
+                    instruction_copy=deepCopyString(instruction);  
                     if(instruction != NULL){
                         for (char *p = instruction; *p; p++) {
                             if (*p == ',') *p = ' ';
@@ -160,8 +176,11 @@ int main() {
                         }    
                     }
                     if (instruction == NULL) continue;
-                    char **tokens = string_split(instruction);
                     
+                    char **tokens = string_split(instruction);
+                    //printf("%s\n",instruction);
+                    //instruction=deepCopyString(instruction_copy);
+                    //printf("%s\n",instruction);
                     if(strcmp(tokens[0],".data")==0 || strcmp(tokens[0],".text")==0){
                         counter++;
                         continue;
@@ -252,7 +271,9 @@ int main() {
                         }
                         counter++;
                     }
-                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, counter_ptr);
+                    //printf("runcheck1\n");
+                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, counter_ptr,label_position_iter);
+                    //printf("runcheck1\n");
                     counter++;
                     //printf("%d\n", counter);
                     //printf("ptr is %d\n", *counter_ptr);
@@ -463,7 +484,8 @@ int main() {
                         //stepper++;
                         //counter++;
                     }
-                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, counter_ptr);
+void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter);
+                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, counter_ptr,label_position_iter);
                     stepper++;
                     counter = stepper;
                     printf("%d\n", stepper);
