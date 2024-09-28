@@ -8,7 +8,7 @@ typedef struct {
     uint8_t value;
 } MemEntry;
 
-void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter){
+void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers){
     if (strcmp(tokens[0], "add") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
@@ -291,5 +291,14 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         }
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
+    } else if (strcmp(tokens[0], "beq") == 0){
+        int rs1 = register_finder(tokens[1]);
+        int rs2 = register_finder(tokens[2]);
+        int imm = atoi(tokens[3]);
+        if (register_value[rs1] == register_value[rs2]){
+            printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
+
+            pc_counter = pc_counter + imm;
+        }
     }
 }

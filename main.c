@@ -19,7 +19,7 @@ long int register_value[]={0,0,0,0,0,0,0,0,
 
 
 MemEntry *mem_entries;
-int pc_counter;
+int pc_counter = 0;
 
 int main() {
     mem_entries = malloc(MAX_ADDRESS * sizeof(MemEntry));
@@ -27,7 +27,8 @@ int main() {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
-    char command[MAX_INPUT_SIZE]; 
+    char command[MAX_INPUT_SIZE];
+    int stepper = 0;
     
     while (1) {  
         fgets(command,sizeof(command),stdin);   
@@ -68,6 +69,20 @@ int main() {
                 int i=0;
                 uint64_t d_address=0x10000;
                 pc_counter=0;
+                char *label_names[MAX_LINES];
+                int label_position_iter = 0;
+                int line_iterater = 0;
+                int label_line_numbers[MAX_LINES];
+                while (fgets(line, sizeof(line), input) != NULL) {
+                    if (ischarinstring(line, ':')) {
+                    char *label_selector = strtok(line, ":\n\r");
+                    label_names[label_position_iter] = strdup(label_selector);
+                    label_line_numbers[label_position_iter] = line_iterater;
+                    label_position_iter++;
+                }
+                line_iterater++;
+                }
+                rewind(input);
                 while(fgets(line,sizeof(line),input)!=NULL){
                     //printf("runcheck\n");
                     char *substrings = strtok(line,"\t\n\r"); 
@@ -234,7 +249,7 @@ int main() {
                         }
                         counter++;
                     }
-                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter);
+                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers);
                     counter++;
                     
                 }
@@ -263,6 +278,183 @@ int main() {
                 for(int k=0;k<count;k++){
                     printf("Memory[0x%05X] = 0x%02X\n",mem_entries[mem+k].address,mem_entries[mem+k].value);
                 }
+           } else if (strcmp(tokens_comm[0], "step") == 0){
+                //printf("%d\n", stepper);
+                if (input == NULL) {
+                    printf("input file not found\n");
+                    fclose(input);
+                }
+                //printf("runcheck2\n");
+                //printf("check1\n");
+                char line[MAX_INPUT_SIZE];
+                char *array_of_lines[MAX_LINES];
+                for (int k = 0; k < MAX_LINES; k++) {
+                     array_of_lines[k] = malloc(MAX_INPUT_SIZE * sizeof(char));
+                    if (array_of_lines[k] == NULL) {
+                    fprintf(stderr, "Memory allocation failed for line %d\n", k);
+                    return 1; // Exit on allocation failure
+                    }
+                }
+                //printf("check2\n");
+                int i=0;
+                uint64_t d_address=0x10000;
+                char *label_names[MAX_LINES];
+                int label_position_iter = 0;
+                int line_iterater = 0;
+                int label_line_numbers[MAX_LINES];
+                //printf("check3\n");
+                while (fgets(line, sizeof(line), input) != NULL) {
+                    if (ischarinstring(line, ':')) {
+                    char *label_selector = strtok(line, ":\n\r");
+                    label_names[label_position_iter] = strdup(label_selector);
+                    label_line_numbers[label_position_iter] = line_iterater;
+                    label_position_iter++;
+                }
+                line_iterater++;
+                }
+                rewind(input);
+                //printf("check4\n");
+                while(fgets(line,sizeof(line),input)!=NULL){
+                    //printf("runcheck\n");
+                    char *substrings = strtok(line,"\t\n\r"); 
+                    if(substrings!=NULL){
+                       strcpy(array_of_lines[i],line);
+                       //printf("runcheck1\n");
+                       //printf("%s\n",array_of_lines[i]);
+                       i++;
+                    }
+                    if (stepper == 0){
+                        if (strcmp(substrings, ".text") == 0) {
+                        stepper = i; 
+                            continue; 
+                        }
+                    }
+                    if(i>=60){
+                        break;
+                    }
+                }
+                int size=strlen(array_of_lines[stepper]);
+                char *instruction;
+                    char *label;
+                    //printf("check5\n");
+                    char line_copy1[size];
+                    strcpy(line_copy1,array_of_lines[stepper]);
+                    char *tokens_for_labels = strtok(array_of_lines[stepper], ":\n\r");
+                    
+                    if(ischarinstring(line_copy1,':')==1){
+                        label = tokens_for_labels;
+                        tokens_for_labels = strtok(NULL, ":\n\r");
+                        instruction = tokens_for_labels;
+                    } else {
+                        instruction = tokens_for_labels;
+                        label=NULL;
+                    }    
+                    if(instruction != NULL){
+                        for (char *p = instruction; *p; p++) {
+                            if (*p == ',') *p = ' ';
+                            if (*p == '(') *p = ' ';
+                            if (*p == ')') *p = ' ';
+                        }    
+                    }
+                    //printf("%s\n", instruction);
+                    if (instruction == NULL) continue;
+
+                    char **tokens = string_split(instruction);
+                    
+                    if(strcmp(tokens[0],".data")==0 || strcmp(tokens[0],".text")==0){
+                        //stepper++;
+                        //printf("%d\n", stepper);
+                        continue;
+                    }
+                    if(strcmp(tokens[0],".dword")==0){
+                         if(tokens[1]==NULL){
+                             //error handling?
+                         } else {
+                            for(int k=1;tokens[k]!=NULL;k++){
+                                char* endpointer;
+                                long int num = strtol(tokens[k],&endpointer,0);
+                                //printf("%lX\n",num);
+                                int m = 0;
+                                for ( m = 0; m < 8; m++) {
+                                    // mem_entries[j+m].address=d_address+m;
+                                    // mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
+                                    //mem_entries[j+m].address=d_address+m;
+                                    mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
+                                }
+                                //printf("%d\n", m);
+                                //j=j+8;
+                                d_address=d_address+8;  
+                            }
+                        }
+                         //stepper++;
+                    } else if(strcmp(tokens[0],".word")==0){
+                        if (tokens[1] == NULL){
+                            //error handling.
+                        } else{
+                            for (int k = 1; tokens[k] != NULL; k++){
+                                char *endpointer;
+                                long int num = strtol(tokens[k], &endpointer, 0);
+                                int m = 0;
+                                for (m = 0; m < 4; m++){
+                                   // mem_entries[j+m].address=d_address+m;
+                                    // mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
+                                    //mem_entries[j+m].address=d_address+m;
+                                    mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
+                                }
+                                //printf("%d\n", m);
+                                //j = j + 4;
+                                d_address = d_address + 4;
+                            }
+                        }
+
+                        //stepper++;
+                    }  else if(strcmp(tokens[0],".half")==0){
+                        if (tokens[1] == NULL){
+                            //error handling.
+                        } else{
+                            for (int k = 1; tokens[k] != NULL; k++){
+                                char *endpointer;
+                                long int num = strtol(tokens[k], &endpointer, 0);
+                                int m = 0;
+                                for (m = 0; m < 2; m++){
+                                    // mem_entries[j+m].address=d_address+m;
+                                    // mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
+                                    //mem_entries[j+m].address=d_address+m;
+                                    mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
+                                }
+                                //j = j + 2;
+                                d_address = d_address + 2;
+                            }
+                        }
+
+                        //stepper++;
+                    }  else if(strcmp(tokens[0],".byte")==0){
+                        if (tokens[1] == NULL){
+                            //error handling.
+                        } else{
+                            for (int k = 1; tokens[k] != NULL; k++){
+                                char *endpointer;
+                                long int num = strtol(tokens[k], &endpointer, 0);
+                                int m = 0;
+                                for (m = 0; m < 1; m++){
+                                    // mem_entries[j+m].address=d_address+m;
+                                    // mem_entries[j+m].value = (num >> (m * 8)) & 0xFF; 
+                                    //mem_entries[j+m].address=d_address+m;
+                                    mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
+                                    //printf("0x%llX->0x%02X\n",mem_entries[d_address+m].address,mem_entries[d_address+m].value);
+                                }
+                                //j = j + 1;
+                                d_address = d_address + 1;
+                            }
+                        }
+                        //stepper++;
+                    }
+                    run_instruction(line_copy1,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers);
+                    stepper++;
+                    //printf("%d\n", stepper);      
            }
     }
     free(mem_entries);
