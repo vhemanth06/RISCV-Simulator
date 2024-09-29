@@ -165,7 +165,7 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         *pc_counter=*pc_counter+4;
         //printf("%d\n",*pc_counter);
     } else if (strcmp(tokens[0], "ld") == 0) {
-        printf("runcheck\n");
+        //printf("runcheck\n");
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[3]);
         int num = atoi(tokens[2]);
@@ -176,6 +176,7 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
             result |=((int64_t)mem_entries[mem+k].value<<(k*8));
         }
         register_value[rd] = result;
+        //printf("result is %d\n", result);
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
         //printf("%ld\n",result);    
@@ -310,7 +311,7 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         if(index == -1 && non_int_char_finder(tokens[3])==0 ){
                 imm=atoi(tokens[3]);
             }
-         
+         //printf("imm is %d\n", imm);
             // if(index == -1 && non_int_char_finder(tokens[3])==1){
             //     printf("Error in line %d:no such label exists\n",line_iterater2+1);
             //     fprintf(output,"\n");
@@ -337,6 +338,7 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int imm;
 
         for(int k=0;k<label_position_iter;k++){
+            //printf("runheck\n");
                    if(strcmp(tokens[3],label_names[k])==0){
                         index=label_line_numbers[k];
                         break;
@@ -348,6 +350,7 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         if(index == -1 && non_int_char_finder(tokens[3])==0 ){
                 imm=atoi(tokens[3]);
             }
+        //printf("imm is %d\n", index);
         if (register_value[rs1] != register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
@@ -361,9 +364,24 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
             *pc_counter = *pc_counter + 4;
         }
     } else if (strcmp(tokens[0], "blt") == 0){
+
         int rs1 = register_finder(tokens[1]);
         int rs2 = register_finder(tokens[2]);
-        int imm = atoi(tokens[3]);
+        int index=-1;
+        int imm;
+
+        for(int k=0;k<label_position_iter;k++){
+                   if(strcmp(tokens[3],label_names[k])==0){
+                        index=label_line_numbers[k];
+                        break;
+                    }
+        }
+        if (index!=-1){
+                imm=((index)-(*counter_ptr))*4;
+            }  
+        if(index == -1 && non_int_char_finder(tokens[3])==0 ){
+                imm=atoi(tokens[3]);
+            }
         if (register_value[rs1] < register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
@@ -379,7 +397,21 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
     } else  if (strcmp(tokens[0], "bge") == 0){
         int rs1 = register_finder(tokens[1]);
         int rs2 = register_finder(tokens[2]);
-        int imm = atoi(tokens[3]);
+        int index=-1;
+        int imm;
+
+        for(int k=0;k<label_position_iter;k++){
+                   if(strcmp(tokens[3],label_names[k])==0){
+                        index=label_line_numbers[k];
+                        break;
+                    }
+        }
+        if (index!=-1){
+                imm=((index)-(*counter_ptr))*4;
+            }  
+        if(index == -1 && non_int_char_finder(tokens[3])==0 ){
+                imm=atoi(tokens[3]);
+            }
         if (register_value[rs1] >= register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
@@ -395,7 +427,21 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
     } else  if (strcmp(tokens[0], "bltu") == 0){
         int rs1 = register_finder(tokens[1]);
         int rs2 = register_finder(tokens[2]);
-        int imm = atoi(tokens[3]);
+        int index=-1;
+        int imm;
+
+        for(int k=0;k<label_position_iter;k++){
+                   if(strcmp(tokens[3],label_names[k])==0){
+                        index=label_line_numbers[k];
+                        break;
+                    }
+        }
+        if (index!=-1){
+                imm=((index)-(*counter_ptr))*4;
+            }  
+        if(index == -1 && non_int_char_finder(tokens[3])==0 ){
+                imm=atoi(tokens[3]);
+            }
         if ((unsigned int)register_value[rs1] < (unsigned int)register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
@@ -411,7 +457,21 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
     } else  if (strcmp(tokens[0], "bgeu") == 0){
         int rs1 = register_finder(tokens[1]);
         int rs2 = register_finder(tokens[2]);
-        int imm = atoi(tokens[3]);
+        int index=-1;
+        int imm;
+
+        for(int k=0;k<label_position_iter;k++){
+                   if(strcmp(tokens[3],label_names[k])==0){
+                        index=label_line_numbers[k];
+                        break;
+                    }
+        }
+        if (index!=-1){
+                imm=((index)-(*counter_ptr))*4;
+            }  
+        if(index == -1 && non_int_char_finder(tokens[3])==0 ){
+                imm=atoi(tokens[3]);
+            }
         if ((unsigned int)register_value[rs1] >= (unsigned int)register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
