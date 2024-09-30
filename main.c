@@ -20,16 +20,14 @@ long int register_value[]={0,0,0,0,0,0,0,0,
 
 MemEntry *mem_entries;
 int pc_counter = 0;
+int *breakpoint;
 
 char* deepCopyString(char* str) {
-    // Allocate memory for the new string (+1 for the null terminator)
     char* newStr = (char*)malloc(strlen(str) + 1);
     if (newStr == NULL) {
-        // Handle memory allocation failure
         return NULL;
     }
     
-    // Copy the original string into the new memory
     strcpy(newStr, str);
     return newStr;
 }
@@ -48,6 +46,9 @@ int main() {
     stepper_ptr = &stepper;
     int break_points[5];
     int brk = 0;
+     int i=0;
+     char line[MAX_INPUT_SIZE];
+    char *array_of_lines[MAX_LINES];
     
     while (1) {  
         fgets(command,sizeof(command),stdin);   
@@ -70,8 +71,35 @@ int main() {
                 mem_entries[k].value=0;
             }
             
+                for (int k = 0; k < MAX_LINES; k++) {
+                     array_of_lines[k] = malloc(MAX_INPUT_SIZE * sizeof(char));
+                    if (array_of_lines[k] == NULL) {
+                    fprintf(stderr, "Memory allocation failed for line %d\n", k);
+                    return 1; // Exit on allocation failure
+                    }
+                }
+               
+            while(fgets(line,sizeof(line),input)!=NULL){
+                    //printf("runcheck\n");
+                    char *substrings = strtok(line,"\t\n\r"); 
+                    if(substrings!=NULL){
+                       strcpy(array_of_lines[i],line);
+                       //printf("runcheck1\n");
+                       //printf("%s\n",array_of_lines[i]);
+                       i++;
+                    }
+                    if(i>=60){
+                        break;
+                    }
+                }
+                breakpoint=(int*)malloc((i+1)*sizeof(int));
+                for(int k=0;k<i+1;k++){
+                    breakpoint[i]=0;
+                }
+                rewind(input);
             continue;
            } else if(strcmp(tokens_comm[0],"run")==0){
+                //printf("runcheck1\n");
                 if (input == NULL) {
                     printf("input file not found\n");
                     fclose(input);
@@ -86,9 +114,10 @@ int main() {
                     return 1; // Exit on allocation failure
                     }
                 }
-                int i=0;
+                //printf("runcheck3\n");
+                //int i=0;
                 uint64_t d_address=0x10000;
-                pc_counter=0;
+                //pc_counter=0;
                 char *label_names[MAX_LINES];
                 int label_position_iter = 0;
                 int line_iterater = 0;
@@ -102,6 +131,8 @@ int main() {
                     }
                 line_iterater++;
                 }
+                i=0;
+                //printf("runcheck4\n");
                 rewind(input);
                 while(fgets(line,sizeof(line),input)!=NULL){
                     //printf("runcheck\n");
@@ -116,6 +147,8 @@ int main() {
                         break;
                     }
                 }
+                
+
                 // while(array_of_lines[counter]!=0){
                       
                 // }
@@ -144,10 +177,12 @@ int main() {
 
                 //     } 
                 // }
-                // rewind(input);
+                rewind(input);
+                //printf("runcheck5 for %d ,%d\n",counter,i);
                 while(counter < i){
                     //printf("xs ios %d\n", counter);
                     //printf("%s\n",array_of_lines[counter]);
+                    
                     int size=strlen(array_of_lines[counter]);
                     //printf("pc at while%d\n",pc_counter);
                     // if(line[0]=='.'){
@@ -159,6 +194,7 @@ int main() {
                     
                     char line_copy1[size];
                     strcpy(line_copy1,array_of_lines[counter]);
+                    //printf("%s\n",array_of_lines[counter]);
                     char *copy=deepCopyString(array_of_lines[counter]);
                     char *tokens_for_labels = strtok(copy, ":\n\r");
                     if(ischarinstring(line_copy1,':')==1){
@@ -168,10 +204,13 @@ int main() {
                     } else {
                         instruction = tokens_for_labels;
                         label=NULL;
-                    }  
+                    } 
+                    //printf("runcheck6 %s 23\n",array_of_lines[counter]); 
                     //int size2=strlen(instruction);
                     char *instruction_copy;
-                    instruction_copy=deepCopyString(instruction);  
+                    //printf("runcheck6.1 %s\n",instruction);
+                    instruction_copy=deepCopyString(instruction);
+                    //printf("runcheck7 %s\n",instruction);  
                     if(instruction != NULL){
                         for (char *p = instruction; *p; p++) {
                             if (*p == ',') *p = ' ';
@@ -182,6 +221,7 @@ int main() {
                     if (instruction == NULL) continue;
                     
                     char **tokens = string_split(instruction);
+                    
                     //printf("%s\n",instruction);
                     //instruction=deepCopyString(instruction_copy);
                     //printf("%s\n",instruction);
@@ -275,10 +315,16 @@ int main() {
                         }
                         counter++;
                     }
-                    //printf("runcheck1\n");
+                    
                     run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, counter_ptr,label_position_iter);
-                    //printf("runcheck1\n");
+                    
                     counter++;
+                    //printf("runcheck8 %d\n",counter);
+                    if (breakpoint[counter+1]==1){
+                         printf("Execution stopped at breakpoint\n");
+                         break;
+                    }
+                    
                     //printf("%d\n", counter);
                     //printf("ptr is %d\n", *counter_ptr);
                     
@@ -640,10 +686,18 @@ int main() {
                     //printf("her3 is %d\n", counter);      
            } else if (strcmp(tokens_comm[0], "break") == 0){
                 int num = atoi(tokens_comm[1]);
-                while(brk <= 5){
-                    break_points[brk] = num;
-                    ++brk;
+                if(num<=i){
+                    breakpoint[num]=1;
                 }
+                
+           } else if (strcmp(tokens_comm[0], "del") == 0){
+                int num = atoi(tokens_comm[2]);
+                if(breakpoint[num]==1){
+                   breakpoint[num]=0;
+                } else {
+                    printf("No breakline exits\n");
+                }
+                
            }
     }
     free(mem_entries);
