@@ -357,12 +357,13 @@ int main() {
            } else if (strcmp(tokens_comm[0], "step") == 0){
                 // printf("%d\n", i);
                 // printf("%d\n", stepper);
+                
+                //printf("counter is %d\n", counter);
+                stepper = counter;
                 if(stepper >= i){
                     printf("No more instructions to step.\n");
                     continue;
                 }
-                //printf("counter is %d\n", counter);
-                stepper = counter;
                 //printf("%d\n", stepper);
                 if (input == NULL) {
                     printf("input file not found\n");
@@ -398,7 +399,7 @@ int main() {
                 line_iterater++;
                 }
                 rewind(input);
-                while (fgets(line2, sizeof(line2), input) != NULL){
+                while (fgets(line2, sizeof(line2), input) != NULL && stepper == 0){
                     char *pieces[100];
                     char *token;
                     int i = 0;

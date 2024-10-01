@@ -500,14 +500,27 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         if(index == -1 && non_int_char_finder(tokens[3])==0 ){
             imm=atoi(tokens[3]);
         }
+        printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         register_value[rs1] = *pc_counter + 4;
-        *pc_counter = *pc_counter + imm - 4;
+        *pc_counter = *pc_counter + imm;
+        
         //printf("val is %d\n", *counter_ptr);
         *counter_ptr = *counter_ptr + (imm/4);
         (*counter_ptr)--;
         //printf("val is %d\n", *counter_ptr);
     } else if (strcmp(tokens[0], "jalr") == 0){
-        int rs1 = register_finder(tokens[1]);
-        *pc_counter = register_value[rs1];
+        int rs2 = register_finder(tokens[3]);
+        int rs1=register_finder(tokens[1]);
+        int imm= atoi(tokens[1]);
+        int pc_1 = *pc_counter;
+        printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
+        register_value[rs1] = *pc_counter+4;
+        *pc_counter = register_value[rs2]+imm;
+        int diff;
+        diff = *pc_counter - pc_1;
+        *counter_ptr = *counter_ptr + (diff/4);
+        (*counter_ptr)--;
+        // printf("%d\n", pc_1);
+        // printf("%d\n", *pc_counter);
     }
 }
