@@ -484,5 +484,30 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
             printf("Condition test %s failed, skipped line, PC=0x%08x\n", line,*pc_counter);
             *pc_counter = *pc_counter + 4;
         }
+    } else if (strcmp(tokens[0], "jal") == 0){
+        int rs1 = register_finder(tokens[1]);
+        int index = -1;
+        int imm;
+        for(int k=0;k<label_position_iter;k++){
+            if(strcmp(tokens[2],label_names[k])==0){
+                index=label_line_numbers[k];
+                break;
+            }
+        }
+        if (index != -1){
+            imm=((index)-(*counter_ptr))*4;
+        }
+        if(index == -1 && non_int_char_finder(tokens[3])==0 ){
+            imm=atoi(tokens[3]);
+        }
+        register_value[rs1] = *pc_counter + 4;
+        *pc_counter = *pc_counter + imm - 4;
+        //printf("val is %d\n", *counter_ptr);
+        *counter_ptr = *counter_ptr + (imm/4);
+        (*counter_ptr)--;
+        //printf("val is %d\n", *counter_ptr);
+    } else if (strcmp(tokens[0], "jalr") == 0){
+        int rs1 = register_finder(tokens[1]);
+        *pc_counter = register_value[rs1];
     }
 }

@@ -355,7 +355,12 @@ int main() {
                     printf("Memory[0x%05X] = 0x%02X\n",mem_entries[mem+k].address,mem_entries[mem+k].value);
                 }
            } else if (strcmp(tokens_comm[0], "step") == 0){
-                
+                // printf("%d\n", i);
+                // printf("%d\n", stepper);
+                if(stepper >= i){
+                    printf("No more instructions to step.\n");
+                    continue;
+                }
                 //printf("counter is %d\n", counter);
                 stepper = counter;
                 //printf("%d\n", stepper);
