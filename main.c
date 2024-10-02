@@ -694,12 +694,14 @@ int main() {
                 int num = atoi(tokens_comm[1]);
                 if(num<=i){
                     breakpoint[num]=1;
+                    printf("Breakpoint set at line %d\n", num);
                 }
                 
            } else if (strcmp(tokens_comm[0], "del") == 0){
                 int num = atoi(tokens_comm[2]);
                 if(breakpoint[num]==1){
                    breakpoint[num]=0;
+                   printf("Breakpoint removed at line %d\n", num);
                 } else {
                     printf("No breakline exits\n");
                 }
