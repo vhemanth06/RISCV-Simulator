@@ -1,7 +1,8 @@
 #include<stdio.h>
 #include <string.h>
 #include<ctype.h>
-#define MAX_TOKENS 10
+#include<stdlib.h>
+#define MAX_TOKENS 50
 char **string_split(char *string) {
     static char *result[MAX_TOKENS + 1];
     int a = 0;
@@ -49,4 +50,21 @@ int register_finder(char *str) {
         }
     } 
     return -1;
+}
+
+char* deepCopyString(char* str) {
+    char* newStr = (char*)malloc(strlen(str) + 1);
+    if (newStr == NULL) {
+        return NULL;
+    }
+    
+    strcpy(newStr, str);
+    return newStr;
+}
+
+char* trim_space(char* string){
+    while(isspace((unsigned char)*string)){
+        string++;
+    }
+    return string;
 }

@@ -3,11 +3,13 @@
 #include <stdlib.h>
 #include "functions.h"
 #include "run.h"
+#include "stack.h"
 #include <stdint.h>
-#define MAX_ADDRESS 0x50000
-#define MAX_TOKENS 10
+//#include "hex.h"
+#define MAX_ADDRESS 0x50001
+#define MAX_TOKENS 50
 #define MAX_INPUT_SIZE 100 
-#define MAX_LINES 60 
+#define MAX_LINES 500
 long int default_register_value[]={0,0,0,0,0,0,0,0,
                       0,0,0,0,0,0,0,0,
                       0,0,0,0,0,0,0,0,
@@ -22,16 +24,9 @@ MemEntry *mem_entries;
 int pc_counter = 0;
 int *breakpoint;
 
-char* deepCopyString(char* str) {
-    char* newStr = (char*)malloc(strlen(str) + 1);
-    if (newStr == NULL) {
-        return NULL;
-    }
-    
-    strcpy(newStr, str);
-    return newStr;
-}
+
 int main() {
+    //printf("runcheck\n");
     mem_entries = malloc(MAX_ADDRESS * sizeof(MemEntry));
     if (mem_entries == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
@@ -47,8 +42,12 @@ int main() {
     int break_points[5];
     int brk = 0;
      int i=0;
+     int tnum=0;
      char line[MAX_INPUT_SIZE];
     char *array_of_lines[MAX_LINES];
+    uint64_t t_address=0x0;
+    //printf("runcheck\n");
+    Stack* call_stack;
     
     while (1) {  
         fgets(command,sizeof(command),stdin);   
@@ -81,7 +80,7 @@ int main() {
                
             while(fgets(line,sizeof(line),input)!=NULL){
                     //printf("runcheck\n");
-                    char *substrings = strtok(line,"\t\n\r"); 
+                    char *substrings = strtok(line,"\n\r"); 
                     if(substrings!=NULL){
                        strcpy(array_of_lines[i],line);
                        //printf("runcheck1\n");
@@ -97,6 +96,18 @@ int main() {
                     breakpoint[i]=0;
                 }
                 rewind(input);
+                while(fgets(line,sizeof(line),input)!=NULL){
+                    if(line[0]=='.'){
+                        tnum++;
+                    }
+                }
+                rewind(input);
+                call_stack=createEmptyStack();
+                char* string=strdup("main");
+                push(call_stack,string);
+                call_stack->line_num[call_stack->top_index]=tnum;
+                //hex(input,mem_entries,t_address);
+                printf("\n");
             continue;
            } else if(strcmp(tokens_comm[0],"run")==0){
                 //printf("runcheck1\n");
@@ -136,7 +147,7 @@ int main() {
                 rewind(input);
                 while(fgets(line,sizeof(line),input)!=NULL){
                     //printf("runcheck\n");
-                    char *substrings = strtok(line,"\t\n\r"); 
+                    char *substrings = strtok(line,"\n\r"); 
                     if(substrings!=NULL){
                        strcpy(array_of_lines[i],line);
                        //printf("runcheck1\n");
@@ -180,7 +191,7 @@ int main() {
                 rewind(input);
                 //printf("runcheck5 for %d ,%d\n",counter,i);
                 while(counter < i){
-                    //printf("xs ios %d\n", counter);
+                    //printf("%d\n", counter);
                     //printf("%s\n",array_of_lines[counter]);
                     
                     int size=strlen(array_of_lines[counter]);
@@ -205,6 +216,7 @@ int main() {
                         instruction = tokens_for_labels;
                         label=NULL;
                     } 
+                    instruction=trim_space(instruction);
                     //printf("runcheck6 %s 23\n",array_of_lines[counter]); 
                     //int size2=strlen(instruction);
                     char *instruction_copy;
@@ -316,8 +328,12 @@ int main() {
                         counter++;
                     }
                     
-                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, counter_ptr,label_position_iter);
-                    
+                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter,
+                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack);
+                    register_value[0]=0;
+                    if(counter==i-1){
+                        pop(call_stack);
+                    }
                     counter++;
                     //printf("runcheck8 %d\n",counter);
                     if (breakpoint[counter+1]==1){
@@ -329,6 +345,7 @@ int main() {
                     //printf("ptr is %d\n", *counter_ptr);
                     
                 }
+                printf("\n");
                 // for (int j = 0; array_of_lines!=NULL; j++) {
                 //         //printf("Line %d: %s\n", j + 1, array_of_lines[j]);
                 //         free(array_of_lines[j]); // Free the allocated memory
@@ -354,6 +371,7 @@ int main() {
                 for(int k=0;k<count;k++){
                     printf("Memory[0x%05X] = 0x%02X\n",mem_entries[mem+k].address,mem_entries[mem+k].value);
                 }
+                printf("\n");
            } else if (strcmp(tokens_comm[0], "step") == 0){
                 // printf("%d\n", i);
                 // printf("%d\n", stepper);
@@ -361,7 +379,7 @@ int main() {
                 //printf("counter is %d\n", counter);
                 stepper = counter;
                 if(stepper >= i){
-                    printf("No more instructions to step.\n");
+                    printf("Nothing to step\n\n");
                     continue;
                 }
                 //printf("%d\n", stepper);
@@ -536,7 +554,7 @@ int main() {
                 //printf("check4\n");
                 while(fgets(line,sizeof(line),input)!=NULL){
                     //printf("runcheck\n");
-                    char *substrings = strtok(line,"\t\n\r"); 
+                    char *substrings = strtok(line,"\n\r"); 
                     if(substrings!=NULL){
                        strcpy(array_of_lines[i],line);
                        //printf("runcheck1\n");
@@ -571,6 +589,7 @@ int main() {
                         instruction = tokens_for_labels;
                         label=NULL;
                     }
+                    instruction=trim_space(instruction);
                     char *instruction_copy;
                     instruction_copy=deepCopyString(instruction);   
                     if(instruction != NULL){
@@ -683,19 +702,25 @@ int main() {
                     //     //counter++;
                     // }
                     //printf("her1 is %d\n", counter);
-                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter);
+                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack);
                     //printf("her2 is %d\n", *counter_ptr);
+                    register_value[0]=0;
+                    if(stepper==i-1){
+                        pop(call_stack);
+                    }
                     stepper++; 
                     //counter++;
                     counter = stepper;
                     //printf("%d\n", stepper);
-                    //printf("her3 is %d\n", counter);      
+                    //printf("her3 is %d\n", counter); 
+                    printf("\n");     
            } else if (strcmp(tokens_comm[0], "break") == 0){
                 int num = atoi(tokens_comm[1]);
                 if(num<=i){
                     breakpoint[num]=1;
                     printf("Breakpoint set at line %d\n", num);
                 }
+                printf("\n");
                 
            } else if (strcmp(tokens_comm[0], "del") == 0){
                 int num = atoi(tokens_comm[2]);
@@ -705,7 +730,18 @@ int main() {
                 } else {
                     printf("No breakline exits\n");
                 }
+                printf("\n");
                 
+           } else if(strcmp(tokens_comm[0], "show-stack") == 0){
+                  if(call_stack->top_index==-1){
+                    printf("Empty Call Stack: Execution complete\n");
+                  } else {
+                    printf("Call Stack:\n");
+                    for (int i=0;i<=call_stack->top_index;i++){
+                        printf("%s:%d\n",call_stack->value[i],call_stack->line_num[i]);
+                    }
+                  }
+                  printf("\n");
            }
     }
     free(mem_entries);
