@@ -30,7 +30,7 @@ to compile and run the project , follow the below steps:
 #### 6. Run the Executable file riscv_asm using the following command
     ./riscv_sim
 #### 7.Hence a RISC-V Simulator is started in the terminal.use the commands listed below to use the simulator for RISCV assembly code implementation.
-##Commands
+## Commands
 #### 1. load FILE_NAME 
 Used to load a input file containing riscv assembly code.
 #### 2. run
