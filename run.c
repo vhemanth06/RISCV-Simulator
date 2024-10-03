@@ -60,122 +60,106 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
         int rs2 = register_finder(tokens[3]);
-                        
-        if (register_value[rs2] <= 63 && register_value[rs2] >=0){
             register_value[rd] = register_value[rs1] <<  register_value[rs2];
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter=*pc_counter+4;
-        }
+        
         
     } else if (strcmp(tokens[0], "srl") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
         int rs2 = register_finder(tokens[3]);
-
-        if(register_value[rs2] <= 63 && register_value[rs2] >= 0){
             register_value[rd] = (unsigned int) register_value[rs1] >>  register_value[rs2];
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-            
-        }
                   
     } else if (strcmp(tokens[0], "sra") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
         int rs2 = register_finder(tokens[3]);
-
-        if (register_value[rs2] <= 63 && register_value[rs2] >= 0){
            register_value[rd] = register_value[rs1] >>  register_value[rs2];
            call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        }
           
     } else if (strcmp(tokens[0], "addi") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
-        int num = atoi(tokens[3]);
-
-        if (num <= 1023 && num >= -1024){
+        char* endpointer;
+        long int num = strtol(tokens[3],&endpointer,0);
             register_value[rd] = register_value[rs1] + num;
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        }
+        
         
     } else if (strcmp(tokens[0], "andi") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
-        int num = atoi(tokens[3]);
-
-        if (num <= 1023 && num >= -1024){
+        char* endpointer;
+        long int num = strtol(tokens[3],&endpointer,0);
             register_value[rd] = register_value[rs1] & num;
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        }
+        
             
     } else if (strcmp(tokens[0], "ori") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
-        int num = atoi(tokens[3]);
-
-        if (num <= 1023 && num >= -1024){
+        char* endpointer;
+        long int num = strtol(tokens[3],&endpointer,0);
             register_value[rd] = register_value[rs1] | num;
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        }
+        
             
     } else if (strcmp(tokens[0], "xori") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
-        int num = atoi(tokens[3]);
-
-        if (num <= 1023 && num >= -1024){
+        char* endpointer;
+        long int num = strtol(tokens[3],&endpointer,0);
             register_value[rd] = register_value[rs1] ^ num;
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        }
+        
            
     } else if (strcmp(tokens[0], "slli") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
-        int num = atoi(tokens[3]);
-
-        if (num <= 63 && num >= 0){
+        char* endpointer;
+        long int num = strtol(tokens[3],&endpointer,0);
             register_value[rd] = register_value[rs1] << num;
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4; 
-        }
+        
           
     } else if (strcmp(tokens[0], "srli") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
-        int num = atoi(tokens[3]);
-
-        if (num <= 63 && num >= 0){
+        char* endpointer;
+        long int num = strtol(tokens[3],&endpointer,0);
             register_value[rd] = (uint64_t) register_value[rs1] >> num;
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        }
+        
            
     } else if (strcmp(tokens[0], "srai") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
-        int num = atoi(tokens[3]);
-
-        if (num <= 63 && num >= 0){
+        char* endpointer;
+        long int num = strtol(tokens[3],&endpointer,0);
             register_value[rd] = (int64_t)register_value[rs1] >> num;
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4; 
-        }
+        
            
     } else if(strcmp(tokens[0], "lui") == 0){
         int rd = register_finder(tokens[1]);

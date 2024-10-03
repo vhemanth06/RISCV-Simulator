@@ -75,7 +75,7 @@ int main() {
                        strcpy(array_of_lines[i],line);
                        i++;
                     }
-                    if(i>=60){
+                    if(i>=MAX_LINES){
                         break;
                     }
                 }
@@ -132,7 +132,7 @@ int main() {
                        strcpy(array_of_lines[i],line);
                        i++;
                     }
-                    if(i>=60){
+                    if(i>=MAX_LINES){
                         break;
                     }
                 }
@@ -389,7 +389,7 @@ int main() {
                             continue; 
                         }
                     }
-                    if(i>=60){
+                    if(i>=MAX_LINES){
                         break;
                     }
                 }
