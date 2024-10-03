@@ -26,7 +26,7 @@ to compile and run the project , follow the below steps:
 #### 4. Move to the Extracted folder in the directory in Terminal.
     cd Lab4_AI23BTECH11033_AI23BTECH11033
 #### 5. compile the code by using the following command 
-    make all
+    make 
 #### 6. Run the Executable file riscv_asm using the following command
     ./riscv_sim
 #### 7.Hence a RISC-V Simulator is started in the terminal.use the commands listed below to use the simulator for RISCV assembly code implementation.

@@ -1,8 +1,8 @@
 .data 
-.word 0xaf23, -34, 0xf234, 875
+.dword 0x123445, 17894, -2345, -12, 666
 .text 
 lui x2, 0x10
-lui x3, 0x23
+lui x3, 0x83
 lhu x4, 0(x2)
 lw x17, 2(x2)
 sd x17, 0(x3)
