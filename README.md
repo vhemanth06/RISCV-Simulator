@@ -24,7 +24,7 @@ to compile and run the project , follow the below steps:
 #### 2. Extract the folder into a directory of your choice
 #### 3. Make sure to add the input.s file containing the instructions to this folder.
 #### 4. Move to the Extracted folder in the directory in Terminal.
-    cd Lab4_AI23BTECH11033_AI23BTECH11033
+    cd Lab4_AI23BTECH11033_AI23BTECH11025
 #### 5. compile the code by using the following command 
     make 
 #### 6. Run the Executable file riscv_asm using the following command
