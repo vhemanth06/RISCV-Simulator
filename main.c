@@ -5,7 +5,7 @@
 #include "run.h"
 #include "stack.h"
 #include <stdint.h>
-//#include "hex.h"
+#//include "hex.h"
 #define MAX_ADDRESS 0x50001
 #define MAX_TOKENS 50
 #define MAX_INPUT_SIZE 100 
@@ -39,13 +39,13 @@ int main() {
     int counter = 0;
     counter_ptr = &counter;
     stepper_ptr = &stepper;
-    int break_points[5];
-    int brk = 0;
+    // int break_points[5];
+    // int brk = 0;
      int i=0;
      int tnum=0;
      char line[MAX_INPUT_SIZE];
     char *array_of_lines[MAX_LINES];
-    uint64_t t_address=0x0;
+    //uint64_t t_address=0x0;
     //printf("runcheck\n");
     Stack* call_stack;
     
@@ -366,10 +366,10 @@ int main() {
            } else if(strcmp(tokens_comm[0],"mem")==0){
             char* endpointer;
                 uint64_t mem=strtoul(tokens_comm[1],&endpointer,16);
-                int index=0;
+                //int index=0;
                 int count=atoi(tokens_comm[2]);
                 for(int k=0;k<count;k++){
-                    printf("Memory[0x%05X] = 0x%02X\n",mem_entries[mem+k].address,mem_entries[mem+k].value);
+                    printf("Memory[0x%05lX] = 0x%02X\n",mem_entries[mem+k].address,mem_entries[mem+k].value);
                 }
                 printf("\n");
            } else if (strcmp(tokens_comm[0], "step") == 0){

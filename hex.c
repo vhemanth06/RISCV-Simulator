@@ -6,23 +6,20 @@
 #include "run.h"
 #include <stdint.h> 
 #include "hex.h"
-typedef struct {
-    uint64_t address;
-    uint8_t value;
-} MemEntry;
+
 // #define MAX_ADDRESS 0x50000
 // #define MAX_TOKENS 50
 // #define MAX_INPUT_SIZE 100 
 // #define MAX_LINES 0x50000 
 //newly defined struct varaibles for every format type
-typedef struct {
-    int funct7;
-    int rs2;
-    int rs1;
-    int funct3;
-    int rd;
-    int opcode;
-} R_format_type;
+// typedef struct {
+//     int funct7;
+//     int rs2;
+//     int rs1;
+//     int funct3;
+//     int rd;
+//     int opcode;
+// } R_format_type;
 
 R_format_type create_r_format() {
     R_format_type x = {0};
@@ -30,61 +27,61 @@ R_format_type create_r_format() {
     return x;
 }
 
-typedef struct {
-    int immediate;
-    int rs1;
-    int funct3;
-    int rd;
-    int opcode;
-} I_format_type;
+// typedef struct {
+//     int immediate;
+//     int rs1;
+//     int funct3;
+//     int rd;
+//     int opcode;
+// } I_format_type;
 
-typedef struct {
-    int imm_11_6;
-    int imm_5_0;
-    int rs1;
-    int funct3;
-    int rd;
-    int opcode;
-} I_format_type_exception;
+// typedef struct {
+//     int imm_11_6;
+//     int imm_5_0;
+//     int rs1;
+//     int funct3;
+//     int rd;
+//     int opcode;
+// } I_format_type_exception;
 
-typedef struct {
-    int imm_11_5;
-    int rs2;
-    int rs1;
-    int funct3;
-    int imm_4_0;
-    int opcode;
-    int immediate;
-} S_format_type;
+// typedef struct {
+//     int imm_11_5;
+//     int rs2;
+//     int rs1;
+//     int funct3;
+//     int imm_4_0;
+//     int opcode;
+//     int immediate;
+// } S_format_type;
 
-typedef struct {
-    int imm_12;
-    int imm_10_5;
-    int rs2;
-    int rs1;
-    int funct3;
-    int imm_4_1;
-    int imm_11;
-    int opcode;
-    int immediate;
-} B_format_type;
+// typedef struct {
+//     int imm_12;
+//     int imm_10_5;
+//     int rs2;
+//     int rs1;
+//     int funct3;
+//     int imm_4_1;
+//     int imm_11;
+//     int opcode;
+//     int immediate;
+// } B_format_type;
 
-typedef struct {
-    int imm_20;
-    int imm_10_1;
-    int imm_11;
-    int imm_19_12;
-    int rd;
-    int opcode;
-    int immediate;
-} J_format_type;
+// typedef struct {
+//     int imm_20;
+//     int imm_10_1;
+//     int imm_11;
+//     int imm_19_12;
+//     int rd;
+//     int opcode;
+//     int immediate;
+// } J_format_type;
 
-typedef struct {
-    unsigned long long int imm_31_12;
-    unsigned long long int rd;
-    unsigned long long int opcode;
-    unsigned long long int immediate;
-} U_format_type;
+// typedef struct {
+//     unsigned long long int imm_31_12;
+//     unsigned long long int rd;
+//     unsigned long long int opcode;
+//     unsigned long long int immediate;
+// } U_format_type;
 //Machine code caculation functions
 unsigned int r_format_hex(R_format_type x) {
     return x.opcode | (x.rd << 7) | (x.funct3 << 12) | (x.rs1 << 15) | (x.rs2 << 20) | (x.funct7 << 25);
@@ -373,7 +370,10 @@ void hex(FILE* input,MemEntry *mem_entries,uint64_t t_address) {
         } else {
             instruction = tokens_for_labels;
             label=NULL;
-        }    
+        }  
+        if(ischarinstring(line_copy1,'.')==1){
+            continue;
+        }  
         if(instruction != NULL){
                for (char *p = instruction; *p; p++) {
                    if (*p == ',') *p = ' ';

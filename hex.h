@@ -1,4 +1,6 @@
 
+#ifndef HEX_H
+#define HEX_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,10 +12,7 @@
 #define MAX_TOKENS 50
 #define MAX_INPUT_SIZE 100 
 #define MAX_LINES 500
-typedef struct {
-    uint64_t address;
-    uint8_t value;
-} MemEntry;
+
 //newly defined struct varaibles for every format type
 typedef struct {
     int funct7;
@@ -151,3 +150,4 @@ void immediate_value_U_format(U_format_type *ins, char **str);
 int countTokens(char **tokens) ;
 
 void hex(FILE* input,MemEntry *mem_entries,uint64_t t_address);
+#endif
