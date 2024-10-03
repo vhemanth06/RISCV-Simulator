@@ -1,34 +1,33 @@
-# Makefile for the project
-
 # Compiler
 CC = gcc
 
-# Compiler flags
-CFLAGS = -Wall -Wextra -g
 
-# Source files
-SRC = main.c functions.c run.c stack.c 
+# Object Files
+OBJS = main.o functions.o run.o stack.o
 
-# Object files
-OBJ = $(SRC:.c=.o)
+# Output Executable Name
+TARGET = riscv_sim
 
-# Executable name
-EXEC = riscv_sim
+# Default Target
+all: $(TARGET)
 
-# Default target
-all: $(EXEC)
+# Linking Object Files to Create Executable
+$(TARGET): $(OBJS)
+	$(CC) -o $(TARGET) $(OBJS)
 
-# Rule to link object files into an executable
-$(EXEC): $(OBJ)
-	$(CC) $(OBJ) -o $(EXEC)
+# Compile Source Files into Object Files
+main.o: main.c
+	$(CC) -c main.c
 
-# Rule to compile .c files into .o files
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c $< -o $@
+functions.o: functions.c functions.h
+	$(CC) -c functions.c
 
-# Clean up build files
+run.o: run.c run.h
+	$(CC) -c run.c
+
+stack.o: stack.c stack.h
+	$(CC) -c stack.c
+
+# Clean Up Object Files and Executable
 clean:
-	rm -f $(OBJ) $(EXEC)
-
-# Phony targets
-.PHONY: all clean
+	rm -f $(OBJS) $(TARGET)

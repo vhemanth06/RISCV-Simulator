@@ -3,14 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#define MAX_ADDRESS 0x50000
+#define MAX_ADDRESS 0x50001
 typedef struct {
     uint64_t address;
     uint8_t value;
 } MemEntry;
 
 void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter,Stack* call_stack){
-    //printf("%s for line and %s for token0\n",line,tokens[0]);
     if (strcmp(tokens[0], "add") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
@@ -18,11 +17,8 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
 
         register_value[rd] = register_value[rs1] +  register_value[rs2];
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
-        //printf("%d\n",*pc_counter);
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        //printf("%d\n",*pc_counter);
-        //printf("%d+%d=%d\n",register_value[rs1],register_value[rs2],register_value[rd]);
             
     } else if (strcmp(tokens[0], "sub") == 0) {
         int rd = register_finder(tokens[1]);
@@ -188,27 +184,21 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
 
         register_value[rd] = num<<12;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
-        //printf("%d\n",*pc_counter);
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        //printf("%d\n",*pc_counter);
     } else if (strcmp(tokens[0], "ld") == 0) {
-        //printf("runcheck\n");
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[3]);
         int num = atoi(tokens[2]);
         int64_t result = 0;
         uint64_t mem  = (uint64_t)(register_value[rs1] + num);
-        //printf("runcheck\n");
         for(int k=0;k<8;k++){
             result |=((int64_t)mem_entries[mem+k].value<<(k*8));
         }
         register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
-        //printf("result is %d\n", result);
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        //printf("%ld\n",result);    
     } else if (strcmp(tokens[0], "lw") == 0){
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[3]);
@@ -222,7 +212,6 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
-        //printf("%d\n",result); 
     } else if (strcmp(tokens[0], "lh") == 0){
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[3]);
@@ -350,27 +339,15 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         if(index == -1 && non_int_char_finder(tokens[3])==0 ){
                 imm=atoi(tokens[3]);
             }
-         //printf("imm is %d\n", imm);
-            // if(index == -1 && non_int_char_finder(tokens[3])==1){
-            //     printf("Error in line %d:no such label exists\n",line_iterater2+1);
-            //     fprintf(output,"\n");
-            //     line_iterater2=line_iterater2+1;
-            //     continue;
-            // }
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
-        //printf("%ld for %d,  %ld for %d\n", register_value[rs1],rs1, register_value[rs2],rs2);
         if (register_value[rs1] == register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
-            //printf("val is %d with imm=%d\n", *counter_ptr,imm);
-            
             *counter_ptr = *counter_ptr + (imm/4);
             (*counter_ptr)--;
-            //printf("val is %d\n", *counter_ptr);
         }
         else {
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
-            //printf("Condition test %s failed, skipped line, PC=0x%08x\n", line,*pc_counter);
             *pc_counter = *pc_counter + 4;
         }
     } else if (strcmp(tokens[0], "bne") == 0){
@@ -380,7 +357,6 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int imm;
 
         for(int k=0;k<label_position_iter;k++){
-            //printf("runheck\n");
                    if(strcmp(tokens[3],label_names[k])==0){
                         index=label_line_numbers[k];
                         break;
@@ -393,21 +369,14 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
                 imm=atoi(tokens[3]);
             }
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
-        //printf("imm is %d\n", index);
-        //printf("%ld %ld\n",register_value[rs1],register_value[rs2]);
         if (register_value[rs1] != register_value[rs2]){
-            //printf("runcheck\n");
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
-            
-            //printf("val is %d\n", *counter_ptr);
             *counter_ptr = *counter_ptr + (imm/4);
             (*counter_ptr)--;
-            //printf("val is %d\n", *counter_ptr);
         }
         else {
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
-            //printf("Condition test %s failed, skipped line, PC=0x%08x\n", line,*pc_counter);
             *pc_counter = *pc_counter + 4;
         }
     } else if (strcmp(tokens[0], "blt") == 0){
@@ -430,19 +399,14 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
                 imm=atoi(tokens[3]);
             }
             call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
-            //printf("%ld %ld\n",register_value[rs1],register_value[rs2]);
         if (register_value[rs1] < register_value[rs2]){
-            //printf("runcheck\n");
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
-            //printf("val is %d\n", *counter_ptr);
             *counter_ptr = *counter_ptr + (imm/4);
             (*counter_ptr)--;
-            //printf("val is %d\n", *counter_ptr);
         }
         else {
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
-            //printf("Condition test %s failed, skipped line, PC=0x%08x\n", line,*pc_counter);
             *pc_counter = *pc_counter + 4;
         }
     } else  if (strcmp(tokens[0], "bge") == 0){
@@ -467,14 +431,11 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         if (register_value[rs1] >= register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
-            //printf("val is %d\n", *counter_ptr);
             *counter_ptr = *counter_ptr + (imm/4);
             (*counter_ptr)--;
-            //printf("val is %d\n", *counter_ptr);
         }
         else {
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
-            //printf("Condition test %s failed, skipped line, PC=0x%08x\n", line,*pc_counter);
             *pc_counter = *pc_counter + 4;
         }
     } else  if (strcmp(tokens[0], "bltu") == 0){
@@ -499,14 +460,11 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         if ((unsigned int)register_value[rs1] < (unsigned int)register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
-            //printf("val is %d\n", *counter_ptr);
             *counter_ptr = *counter_ptr + (imm/4);
             (*counter_ptr)--;
-            //printf("val is %d\n", *counter_ptr);
         }
         else {
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
-            //printf("Condition test %s failed, skipped line, PC=0x%08x\n", line,*pc_counter);
             *pc_counter = *pc_counter + 4;
         }
     } else  if (strcmp(tokens[0], "bgeu") == 0){
@@ -531,14 +489,11 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         if ((unsigned int)register_value[rs1] >= (unsigned int)register_value[rs2]){
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
             *pc_counter = *pc_counter + imm;
-            //printf("val is %d\n", *counter_ptr);
             *counter_ptr = *counter_ptr + (imm/4);
             (*counter_ptr)--;
-            //printf("val is %d\n", *counter_ptr);
         }
         else {
             printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
-            //printf("Condition test %s failed, skipped line, PC=0x%08x\n", line,*pc_counter);
             *pc_counter = *pc_counter + 4;
         }
     } else if (strcmp(tokens[0], "jal") == 0){
@@ -565,11 +520,8 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         register_value[rs1] = *pc_counter + 4;
         *pc_counter = *pc_counter + imm;
-        
-        //printf("val is %d\n", *counter_ptr);
         *counter_ptr = *counter_ptr + (imm/4);
         (*counter_ptr)--;
-        //printf("val is %d\n", *counter_ptr);
     } else if (strcmp(tokens[0], "jalr") == 0){
         int rs2 = register_finder(tokens[3]);
         int rs1=register_finder(tokens[1]);
@@ -581,50 +533,7 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int diff;
         diff = *pc_counter - pc_1;
         pop(call_stack);
-        // call_stack->line_num[call_stack->top_index]++;
         *counter_ptr = *counter_ptr + (diff/4);
         (*counter_ptr)--;
-        // printf("%d\n", pc_1);
-        // printf("%d\n", *pc_counter);
     }
 }
-// }else if (strcmp(tokens[0], "jal") == 0){
-//         int rs1 = register_finder(tokens[1]);
-//         int index = -1;
-//         int imm;
-//         for(int k=0;k<label_position_iter;k++){
-//             if(strcmp(tokens[2],label_names[k])==0){
-//                 index=label_line_numbers[k];
-//                 break;
-//             }
-//         }
-//         if (index != -1){
-//             imm=((index)-(*counter_ptr))*4;
-
-//         }
-//         if(index == -1 && non_int_char_finder(tokens[3])==0 ){
-//             imm=atoi(tokens[3]);
-//         }
-//         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
-//         register_value[rs1] = *pc_counter + 4;
-//         *pc_counter = *pc_counter + imm;
-        
-//         //printf("val is %d\n", *counter_ptr);
-//         *counter_ptr = *counter_ptr + (imm/4);
-//         (*counter_ptr)--;
-//         //printf("val is %d\n", *counter_ptr);
-//     } else if (strcmp(tokens[0], "jalr") == 0){
-//         int rs2 = register_finder(tokens[3]);
-//         int rs1=register_finder(tokens[1]);
-//         int imm= atoi(tokens[1]);
-//         int pc_1 = *pc_counter;
-//         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
-//         register_value[rs1] = *pc_counter+4;
-//         *pc_counter = register_value[rs2]+imm;
-//         int diff;
-//         diff = *pc_counter - pc_1;
-//         *counter_ptr = *counter_ptr + (diff/4);
-//         (*counter_ptr)--;
-//         // printf("%d\n", pc_1);
-//         // printf("%d\n", *pc_counter);
-//     }
