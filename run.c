@@ -164,9 +164,9 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
     } else if(strcmp(tokens[0], "lui") == 0){
         int rd = register_finder(tokens[1]);
         char *endptr;
-        long int num = strtol(tokens[2], &endptr, 0);
+        int num = strtol(tokens[2], &endptr, 0) & 0xfffff;
 
-        register_value[rd] = num<<12;
+        register_value[rd] = (long int)(num<<12);
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;
