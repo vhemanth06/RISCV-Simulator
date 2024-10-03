@@ -246,7 +246,7 @@ int main() {
                 }
                 printf("\n");
            } else if(strcmp(tokens_comm[0],"exit")==0){
-                printf("RISCV Simulator successfully exited\n");
+                printf("RISC-V Simulator successfully exited\n");
                 return 0;
            } else if(strcmp(tokens_comm[0],"mem")==0){
             char* endpointer;
@@ -445,7 +445,7 @@ int main() {
                    breakpoint[num]=0;
                    printf("Breakpoint removed at line %d\n", num);
                 } else {
-                    printf("No breakline exits\n");
+                    printf("No breakpoint exits\n");
                 }
                 printf("\n");
                 
