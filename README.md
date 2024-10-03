@@ -29,20 +29,21 @@ to compile and run the project , follow the below steps:
     make all
 #### 6. Run the Executable file riscv_asm using the following command
     ./riscv_sim
-#### 7.Hence a RISC-V Simulator is started in the terminal.use the following commands to use the simulator for RISCV assembly code implementation.
-##### a.load FILE_NAME 
+#### 7.Hence a RISC-V Simulator is started in the terminal.use the commands listed below to use the simulator for RISCV assembly code implementation.
+##Commands
+#### 1. load FILE_NAME 
 Used to load a input file containing riscv assembly code.
-##### b.run
+#### 2. run
 Used to run the assembly code present in input file.
-##### c.exit
+#### 3. exit
 Used to exit the simulator.
-##### d.step
+#### 4. step
 Used to run a single instruction of input assembly code.
-##### e.mem ADDRESS COUNT
+#### 5. mem ADDRESS COUNT
 Used to show the values of memory addresses from ADDRESS to ADDRESS+COUNT-1.
-##### f.show-stack
+#### 6. show-stack
 Used to show the call stack at a certain instance of code implementation.
-##### g.break LINE_NUM
+#### 7. break LINE_NUM
 Used to create a breakpoint at line having line number as LINE_NUM
-##### h.del break LINE_NUM
+#### 8. del break LINE_NUM
 Used to delete a breakpoint at line having line number as LINE_NUM.if line at LINE_NUM doesn't have a breakpoint,it returns a error.
