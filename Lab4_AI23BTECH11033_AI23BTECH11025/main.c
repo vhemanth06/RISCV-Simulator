@@ -246,7 +246,7 @@ int main() {
                 }
                 printf("\n");
            } else if(strcmp(tokens_comm[0],"exit")==0){
-                printf("Exited the simulator\n");
+                printf("RISC-V Simulator successfully exited\n");
                 return 0;
            } else if(strcmp(tokens_comm[0],"mem")==0){
             char* endpointer;
