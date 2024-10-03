@@ -40,7 +40,7 @@ Used to exit the simulator.
 #### 4. step
 Used to run a single instruction of input assembly code.
 #### 5. mem ADDRESS COUNT
-Used to show the values of memory addresses from ADDRESS to ADDRESS+COUNT-1.
+Used to show the values stored at memory addresses from ADDRESS to ADDRESS+COUNT-1.
 #### 6. show-stack
 Used to show the call stack at a certain instance of code implementation.
 #### 7. break LINE_NUM
