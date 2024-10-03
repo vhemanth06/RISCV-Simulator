@@ -5,24 +5,24 @@ The compressed zip file Lab4_AI23BTECH11033_AI23BTECH11025.zip contains the foll
 #### 1. main.c
 This programs the the main source code of this project
 #### 2. run.c run.h
-These programs contains functions and their definations that help in implementing the given assembly code
+These programs contains functions and their definitions that help in implementing the given assembly code
 #### 3. stack.c stack.h
 These programs contains functions for implementation of a stack.
 #### 4. functions.c functions.h 
-These programs contains utility functions that are used for parcing,checking a char in string,finding a register from given input etc.
+These programs contains utility functions that are used for parsing,checking a char in string,finding a register from given input etc.
 #### 5. Makefile
 A makefile that would compile the C codes and generate an executable named riscv_sim.
 #### 6. README.md
 This file contains the information about this folder and usage instructions.
 #### 7. report.pdf
-This file contains the project report.It contains my implementation,challenges,error handling ,assumption etc.
+This file contains the project report.It contains our implementation,challenges,error handling ,assumption etc.
 #### 8. README.pdf
 This file is the md to pdf converted file of README.md
 ## Running the project
 to compile and run the project , follow the below steps:
 #### 1. Download the Lab4_AI23BTECH11033_AI23BTECH11025.zip zip file
 #### 2. Extract the folder into a directory of your choice
-#### 3. Make sure to add the input.s file containing the instructions to this folder.
+#### 3. Make sure to add the input file containing the instructions to this folder.
 #### 4. Move to the Extracted folder in the directory in Terminal.
     cd Lab4_AI23BTECH11033_AI23BTECH11025
 #### 5. compile the code by using the following command 
