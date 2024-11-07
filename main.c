@@ -9,6 +9,7 @@
 #define MAX_TOKENS 50
 #define MAX_INPUT_SIZE 100 
 #define MAX_LINES 500
+//#define MAX_CONFIG_LINES 5
 long int default_register_value[]={0,0,0,0,0,0,0,0,
                       0,0,0,0,0,0,0,0,
                       0,0,0,0,0,0,0,0,
@@ -22,7 +23,7 @@ long int register_value[]={0,0,0,0,0,0,0,0,
 MemEntry *mem_entries;
 int pc_counter = 0;
 int *breakpoint;
-
+bool cache_in=0;
 
 int main() {
     mem_entries = malloc(MAX_ADDRESS * sizeof(MemEntry));
@@ -42,6 +43,13 @@ int main() {
      char line[MAX_INPUT_SIZE];
     char *array_of_lines[MAX_LINES];
     Stack* call_stack;
+    cache_block** cache_mem;
+    int cache_size;
+    int block_size;
+    int max_blocks;
+    int associativity;
+    char* replace_pol;
+    char* wb_policy;
     
     while (1) {  
         fgets(command,sizeof(command),stdin);   
@@ -223,7 +231,7 @@ int main() {
                         counter++;
                     }
                     run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter,
-                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack);
+                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack,cache_mem);
                     register_value[0]=0;
                     if(counter==i-1){
                         pop(call_stack);
@@ -423,7 +431,7 @@ int main() {
                     if (instruction == NULL) continue;
 
                     char **tokens = string_split(instruction);
-                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack);
+                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack,cache_mem);
                     register_value[0]=0;
                     if(stepper==i-1){
                         pop(call_stack);
@@ -460,17 +468,79 @@ int main() {
                   }
                   printf("\n");
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"enable")==0){
-                printf("enble entered\n");
+                  cache_in=1;
+                  FILE* config;
+                  config=fopen(tokens_comm[2],"r");
+                  char config_line[MAX_INPUT_SIZE];
+                  char *array_for_config[5];
+                for (int k = 0; k < 5; k++) {
+                     array_for_config[k] = malloc(MAX_INPUT_SIZE * sizeof(char));
+                    if (array_for_config[k] == NULL) {
+                    fprintf(stderr, "Memory allocation failed for line %d\n", k);
+                    return 1; 
+                    }
+                }
+                  int p=0;
+                  while(fgets(config_line,sizeof(config_line),config)!=NULL){
+                     char *substrings2 = strtok(config_line,"\n\r"); 
+                    if(substrings2!=NULL){
+                       strcpy(array_for_config[p] ,config_line);
+                       p++;
+                       printf("%s\n",array_for_config[p-1]);
+                    }
+                  }
+                  cache_size=atoi(array_for_config[0]);
+                  printf("%d\n",cache_size);
+                  block_size=atoi(array_for_config[1]);
+                  printf("%d\n",block_size);
+                  max_blocks=cache_size/block_size;
+                  printf("%d\n",max_blocks);
+                  associativity=atoi(array_for_config[2]);
+                  printf("%d\n",associativity);
+                  replace_pol=strdup(array_for_config[3]);
+                  //strcpy(replace_pol,array_for_config[3]);
+                  printf("%s\n",replace_pol);
+                  wb_policy=strdup(array_for_config[4]);
+                  //strcpy(wb_policy,array_for_config[4]);
+                  printf("%s\n",wb_policy);
+                 // cache_block cache_mem[max_blocks][block_size];
+                  cache_mem = malloc(max_blocks * sizeof(cache_block*));
+                  for (int i = 0; i < max_blocks; i++) {
+                     cache_mem[i] = malloc(block_size * sizeof(cache_block));
+                  }
+
+                  for(int i=0;i<max_blocks;i++){
+                    printf("%d:",i);
+                    for(int j=0;j<block_size;j++){
+                        cache_mem[i][j].dirty=0;
+                        cache_mem[i][j].H_M=0;
+                        cache_mem[i][j].address=0;
+                        cache_mem[i][j].valid_bit=0;
+                        printf("%d ",j);
+                    }
+                    printf("\n");
+                  }
+
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"disable")==0){
-            
+                  cache_in=0;
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"status")==0){
-            
+                  
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"invalidate")==0){
-            
+                   if(cache_in==1){
+                     for(int i=0;i<max_blocks;i++){
+                        for(int j=0;j<block_size;j++){
+                            cache_mem[i][j].valid_bit=0;
+                        }
+                      }
+                   } else{
+                     printf("Error!cache simulations is disabled\n");
+                   }
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"dump")==0){
             
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"stats")==0){
             
+           } else {
+            printf("Wrong input\n");
            }
     }
     free(mem_entries);
