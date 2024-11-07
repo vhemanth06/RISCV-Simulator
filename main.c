@@ -459,6 +459,18 @@ int main() {
                     }
                   }
                   printf("\n");
+           } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"enable")==0){
+                printf("enble entered\n");
+           } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"disable")==0){
+            
+           } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"status")==0){
+            
+           } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"invalidate")==0){
+            
+           } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"dump")==0){
+            
+           } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"stats")==0){
+            
            }
     }
     free(mem_entries);
