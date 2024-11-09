@@ -28,10 +28,34 @@ typedef struct{
     char* replacement_policy;
     char* wb_policy;
 } cache;
-cache cache_read(cache cache,MemEntry* mem,uint64_t address){
+void cache_read(cache *cache,unsigned int ptag,int index, long int *result, int load_number, MemEntry  *mem_entries){
+     for(int i=0;i<cache->associativity;i++){
+        printf("check %d\n",index);
+        unsigned int tagcheck=cache->sets[index].blocks[i].tag;
+        if(cache->sets[index].blocks[i].tag==ptag && cache->sets[index].blocks[i].valid==1){
+            
+            for(int k=0;k<load_number;k++){
+                if(cache->sets[index].blocks[i].data[k]!=NULL){
+                    *result |=((int64_t)cache->sets[index].blocks[i].data[k]<<(k*8));
+                } else {
+                    printf("error\n");
+                    break;
+                }
+                
+            }
+            cache->hits++;
+            return ;
+            // for(int j=0;j<cache.block_size;j++){
+            // }
+        }
 
+     }
+     cache->misses++;
+     printf("miss\n");
+
+     
 }
-void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter,Stack* call_stack,bool cache_in,cache cache){
+void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter,Stack* call_stack,bool cache_in,cache cache,int cachesize){
     if (strcmp(tokens[0], "add") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
@@ -198,12 +222,26 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int num = atoi(tokens[2]);
         int64_t result = 0;
         uint64_t mem  = (uint64_t)(register_value[rs1] + num);
-        // if (cache_in == 0){
-        //     for(int k=0;k<8;k++){
-        //         result |=((int64_t)mem_entries[mem+k].value<<(k*8));
-        //     }
-        //     register_value[rd] = result;
-        // }
+        if (cache_in == 0){
+            for(int k=0;k<8;k++){
+                result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+            }
+            
+        } else{
+            if (cache.associativity == 1){
+                int byte_offset_bits = (int)(log((double)cache.block_size)/log(2));
+                int index_bits = (int)(log((double)(cachesize/cache.block_size))/log(2));
+                printf("%d %d %d %d\n",index_bits,cachesize,cache.block_size,byte_offset_bits);
+                printf("%x\n",mem);
+                uint32_t c_m = mem >> (byte_offset_bits);
+                unsigned int tag = c_m >> (index_bits);
+                unsigned int tag2 = tag << (index_bits);
+                unsigned int index = c_m - tag2;
+                printf("0x%x 0x%x\n",index,tag);
+                cache_read(&cache,tag,index,&result,8,mem_entries);
+
+            }
+        }    
         // else{
         //     if (associativity == 1){
         //         int byte_offset_bits = (int)log2((double)block_size);
@@ -238,6 +276,7 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
 
         //     }   
         // }
+        register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;

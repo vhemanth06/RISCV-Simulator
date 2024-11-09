@@ -227,7 +227,7 @@ int main() {
                         counter++;
                     }
                     run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter,
-                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack,cache_in,cache);
+                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack,cache_in,cache,cache_size);
                     register_value[0]=0;
                     if(counter==i-1){
                         pop(call_stack);
@@ -427,7 +427,7 @@ int main() {
                     if (instruction == NULL) continue;
 
                     char **tokens = string_split(instruction);
-                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack,cache_in,cache);
+                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack,cache_in,cache,cache_size);
                     register_value[0]=0;
                     if(stepper==i-1){
                         pop(call_stack);
@@ -503,6 +503,7 @@ int main() {
                         for(int j=0;j<cache.associativity;j++){
                             cache.sets[i].blocks[j].data=malloc(cache.block_size*sizeof(int));
                             cache.sets[i].blocks[j].valid=0;
+                            cache.sets[i].blocks[j].tag=0;
                         }    
                     }  
                   } else{}  

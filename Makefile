@@ -7,7 +7,7 @@ TARGET = riscv_sim
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS)
+	$(CC) -o $(TARGET) $(OBJS) -lm
 
 main.o: main.c
 	$(CC) -c main.c
