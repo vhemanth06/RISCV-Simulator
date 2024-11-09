@@ -10,16 +10,26 @@ typedef struct {
     uint8_t value;
 } MemEntry;
 
-typedef struct cache_block{
-    bool H_M;
-    bool dirty;
-    bool valid_bit;
-    uint64_t address ;
-    uint8_t value;
-    int set;
-} cache_block;
+typedef struct {
+    bool valid;
+    unsigned int tag;
+    int* data;
+} cacheblock;
+typedef struct {
+    cacheblock* blocks;
+} cachesets;
+typedef struct{
+    cachesets *sets;
+    int numsets;
+    int associativity;
+    int block_size;
+    int hits;
+    int misses;
+    char* replacement_policy;
+    char* wb_policy;
+} cache;
 
-void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter,Stack* call_stack,cache_block** cache_mem, bool cache_in, int associativity, int block_size,int max_blocks,char* replace_pol, char* wb_policy){
+void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter,Stack* call_stack){
     if (strcmp(tokens[0], "add") == 0) {
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[2]);
@@ -186,40 +196,46 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int num = atoi(tokens[2]);
         int64_t result = 0;
         uint64_t mem  = (uint64_t)(register_value[rs1] + num);
-        if (cache_in == 0){
-            for(int k=0;k<8;k++){
-                result |=((int64_t)mem_entries[mem+k].value<<(k*8));
-            }
-            register_value[rd] = result;
-        }
-        else{
-            if (associativity == 1){
-                int byte_offset_bits = (int)log2((double)block_size);
-                int index_bits = (int)log2((double)max_blocks);
+        // if (cache_in == 0){
+        //     for(int k=0;k<8;k++){
+        //         result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+        //     }
+        //     register_value[rd] = result;
+        // }
+        // else{
+        //     if (associativity == 1){
+        //         int byte_offset_bits = (int)log2((double)block_size);
+        //         int index_bits = (int)log2((double)max_blocks);
                 
-                uint64_t c_m = mem >> (byte_offset_bits);
-                int im = c_m >> (index_bits);
-                im = im << (index_bits);
-                im = c_m - im;
-                bool h_m2 = 0;
-                for (int i = 0; i < block_size; ++i){
-                    if (cache_mem[im][i].valid_bit == 1){
-                        if (cache_mem[im][i].address == mem){
-                            //increase hit
-                            h_m2 = 1;
-                            break;
-                        }
-                    }
-                }
-                if (h_m2 == 0){
-                    for (int i = 0; i < block_size; ++i){
-                        cache_mem[im][i].address = mem+i;
-                    }
+        //         uint64_t c_m = mem >> (byte_offset_bits);
+        //         int tag = c_m >> (index_bits);
+        //         tag = tag << (index_bits);
+        //         int index = c_m - tag;
+        //         bool h_m2 = 0;
+        //         for (int i = 0; i < block_size; ++i){
+        //             if (cache_mem[index][i].valid_bit == 1){
+        //                 if (cache_mem[index][i].address == mem){
+        //                     //increase hit
+        //                     h_m2 = 1;
+        //                     result=result|mem_entries[cache_mem[index][i].address].value;
+        //                 }
+        //             } else{
+        //                 cache_mem[index][i].address=mem+i;
+        //             }
+        //         }
+        //         if (h_m2 == 0){
+        //             for (int i = 0; i < block_size; ++i){
+        //                 cache_mem[index][i].address = mem+i;
+        //             }
 
-                }
-                //cache_mem[im][i].address=mem+i
-            }    
-        }
+        //         }
+        //         //cache_mem[im][i].address=mem+i
+        //     } else if(associativity==0){
+                   
+        //     } else {
+
+        //     }   
+        // }
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
         *pc_counter=*pc_counter+4;

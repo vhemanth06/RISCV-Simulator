@@ -43,13 +43,9 @@ int main() {
      char line[MAX_INPUT_SIZE];
     char *array_of_lines[MAX_LINES];
     Stack* call_stack;
-    cache_block** cache_mem;
+    cache cache;
     int cache_size;
-    int block_size;
-    int max_blocks;
-    int associativity;
-    char* replace_pol;
-    char* wb_policy;
+    
     
     while (1) {  
         fgets(command,sizeof(command),stdin);   
@@ -231,7 +227,7 @@ int main() {
                         counter++;
                     }
                     run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter,
-                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack,cache_mem, cache_in, associativity, block_size, max_blocks, replace_pol, wb_policy);
+                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack);
                     register_value[0]=0;
                     if(counter==i-1){
                         pop(call_stack);
@@ -431,7 +427,7 @@ int main() {
                     if (instruction == NULL) continue;
 
                     char **tokens = string_split(instruction);
-                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack,cache_mem, cache_in, associativity, block_size,max_blocks, replace_pol, wb_policy);
+                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack);
                     register_value[0]=0;
                     if(stepper==i-1){
                         pop(call_stack);
@@ -486,61 +482,81 @@ int main() {
                     if(substrings2!=NULL){
                        strcpy(array_for_config[p] ,config_line);
                        p++;
-                       printf("%s\n",array_for_config[p-1]);
+                       //printf("%s\n",array_for_config[p-1]);
                     }
                   }
                   cache_size=atoi(array_for_config[0]);
-                  printf("%d\n",cache_size);
-                  block_size=atoi(array_for_config[1]);
-                  printf("%d\n",block_size);
-                  max_blocks=cache_size/block_size;
-                  printf("%d\n",max_blocks);
-                  associativity=atoi(array_for_config[2]);
-                  printf("%d\n",associativity);
-                  replace_pol=strdup(array_for_config[3]);
-                  //strcpy(replace_pol,array_for_config[3]);
-                  printf("%s\n",replace_pol);
-                  wb_policy=strdup(array_for_config[4]);
-                  //strcpy(wb_policy,array_for_config[4]);
-                  printf("%s\n",wb_policy);
-                 // cache_block cache_mem[max_blocks][block_size];
-                  cache_mem = malloc(max_blocks * sizeof(cache_block*));
-                  for (int i = 0; i < max_blocks; i++) {
-                     cache_mem[i] = malloc(block_size * sizeof(cache_block));
-                  }
+                  //printf("%d\n",cache_size);
+                  cache.block_size=atoi(array_for_config[1]);
+                  
+                  cache.associativity=atoi(array_for_config[2]);
+                  cache.replacement_policy=strdup(array_for_config[3]);
+                  cache.wb_policy=strdup(array_for_config[4]);
+                  int numblocks=cache_size/cache.block_size;
+                  cache.hits=0;
+                  cache.misses=0;
+                  if(cache.associativity!=0){
+                    cache.numsets=numblocks/cache.associativity;
+                    cache.sets = malloc(cache.numsets * sizeof(cachesets));
+                    for (int i = 0; i < cache.numsets; i++) {
+                        cache.sets[i].blocks = malloc(cache.associativity * sizeof(cacheblock));
+                        for(int j=0;j<cache.associativity;j++){
+                            cache.sets[i].blocks[j].data=malloc(cache.block_size*sizeof(int));
+                            cache.sets[i].blocks[j].valid=0;
+                        }    
+                    }  
+                  } else{}  
+                    printf("\n");
+           } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"disable")==0){
+                    if(cache_in==1){
+                        if(cache.associativity!=0){
+                        for (int i = 0; i < cache.numsets; i++) {
+                            for(int j=0;j<cache.associativity;j++){
+                                free(cache.sets[i].blocks[j].data);
+                            }
+                            free(cache.sets[i].blocks);    
+                        }
+                        free(cache.sets);
+                        }else{
 
-                  for(int i=0;i<max_blocks;i++){
-                    printf("%d:",i);
-                    for(int j=0;j<block_size;j++){
-                        cache_mem[i][j].dirty=0;
-                        cache_mem[i][j].H_M=0;
-                        cache_mem[i][j].address=0;
-                        cache_mem[i][j].valid_bit=0;
-                        printf("%d ",j);
+                        }
+                        cache_in=0;
+                    } else {
+                        printf("Error!cache simulations is disabled\n");
                     }
                     printf("\n");
-                  }
-
-           } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"disable")==0){
-                  cache_in=0;
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"status")==0){
-                  
+                if(cache_in==1){
+                    printf("status:enabled\n");
+                    printf("Cache Size: %d\n",cache_size);
+                    printf("Block Size: %d\n",cache.block_size);
+                    printf("Associativity: %d\n",cache.associativity);
+                    printf("Replacement Policy: %s\n",cache.replacement_policy);
+                    printf("Write Back Policy: %s\n",cache.wb_policy);
+                } else {
+                    printf("status:disabled\n");
+                } 
+                printf("\n");   
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"invalidate")==0){
-                   if(cache_in==1){
-                     for(int i=0;i<max_blocks;i++){
-                        for(int j=0;j<block_size;j++){
-                            cache_mem[i][j].valid_bit=0;
+                    if(cache_in==1){
+                        if(cache.associativity!=0){
+                            for (int i = 0; i < cache.numsets; i++) {
+                                for(int j=0;j<cache.associativity;j++){
+                                    cache.sets[i].blocks[j].valid=0;
+                                }    
+                            }
                         }
-                      }
                    } else{
                      printf("Error!cache simulations is disabled\n");
                    }
+                   printf("\n");
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"dump")==0){
             
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"stats")==0){
             
            } else {
             printf("Wrong input\n");
+            printf("\n");
            }
     }
     free(mem_entries);
