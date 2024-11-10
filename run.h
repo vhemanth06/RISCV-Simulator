@@ -10,14 +10,7 @@ typedef struct {
     uint64_t address;
     uint8_t value;
 } MemEntry;
-// typedef struct cache_block{
-//     bool H_M;
-//     bool dirty;
-//     bool valid_bit;
-//     uint64_t address ;
-//     uint8_t value;
-//     int set;
-// } cache_block;
+
 typedef struct {
     bool valid;
     bool dirty;
@@ -26,6 +19,7 @@ typedef struct {
 } cacheblock;
 typedef struct {
     cacheblock* blocks;
+    int* fifo_queue;
 } cachesets;
 typedef struct{
     cachesets* sets;

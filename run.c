@@ -19,6 +19,7 @@ typedef struct {
 } cacheblock;
 typedef struct {
     cacheblock* blocks;
+    int* fifo_queue;
 } cachesets;
 typedef struct{
     cachesets *sets;
@@ -30,15 +31,66 @@ typedef struct{
     char* replacement_policy;
     char* wb_policy;
 } cache;
-void fifo(cache* cache,unsigned int ptag,int index,int loadnumber,MemEntry* mem,uint64_t address,int* t){
-     int x=0;
-     cache->sets[index].blocks[x].tag = ptag;
-    cache->sets[index].blocks[x].valid = 1;
-    for (int k = 0; k < loadnumber; k++) {
-        cache->sets[index].blocks[x].data[k] = mem[address+k].value;
+// void fifo(cache* cache,unsigned int ptag,int index,int loadnumber,MemEntry* mem,uint64_t address,int* t){
+//      int x=0;
+//      cache->sets[index].blocks[x].tag = ptag;
+//     cache->sets[index].blocks[x].valid = 1;
+//     for (int k = 0; k < loadnumber; k++) {
+//         cache->sets[index].blocks[x].data[k] = mem[address+k].value;
+//     }
+//     *t=x;
+// }
+void fifo(cache* cache, unsigned int ptag, int index, int loadnumber, MemEntry* mem, uint64_t address, int* t) {
+    int block_to_replace = -1;  // Default to -1 (will be set later if the set is full)
+    int empty_block = -1;  // Variable to track the first empty block (valid == 0)
+
+    // Search for the first empty block (valid == 0)
+    for (int i = 0; i < cache->associativity; i++) {
+        if (cache->sets[index].blocks[i].valid == 0) {
+            empty_block = i;  // Found an empty block
+            break;
+        }
     }
-    *t=x;
+
+    if (empty_block != -1) {
+        // There's an empty block available, so place the new block there
+        block_to_replace = empty_block;
+    } else {
+        // The set is full, so we replace the oldest block (FIFO)
+        block_to_replace = cache->sets[index].fifo_queue[0];
+        
+        // Shift the FIFO queue to the left (remove the oldest block)
+        for (int i = 0; i < cache->associativity - 1; i++) {
+            cache->sets[index].fifo_queue[i] = cache->sets[index].fifo_queue[i + 1];
+        }
+    }
+
+    // Update the selected block (either empty or oldest)
+    cache->sets[index].blocks[block_to_replace].tag = ptag;
+    cache->sets[index].blocks[block_to_replace].valid = 1;
+
+    // Load the data into the block
+    for (int k = 0; k < loadnumber; k++) {
+        cache->sets[index].blocks[block_to_replace].data[k] = mem[address + k].value;
+    }
+
+    // Update the FIFO queue to reflect the new block's position
+    // If the set was full, we move the replaced block to the end of the queue
+    // if (empty_block == -1) {
+    //     // The set was full, so we need to update the FIFO queue
+    //     for (int i = 0; i < cache->associativity - 1; i++) {
+    //         cache->sets[index].fifo_queue[i] = cache->sets[index].fifo_queue[i + 1];
+    //     }
+    // }
+
+    // Add the new block's index to the end of the FIFO queue
+    cache->sets[index].fifo_queue[cache->associativity - 1] = block_to_replace;
+
+    // Return the index of the replaced block
+    *t = block_to_replace;
 }
+
+
 void lru(cache* cache,unsigned int ptag,int index,int loadnumber,MemEntry* mem,uint64_t address,int* t){
 
 }
@@ -89,9 +141,16 @@ void cache_read(cache *cache,unsigned int ptag,int index, long int *result, int 
         if(strcmp(cache->replacement_policy,"LRU")==0){
             //lru();
         }else if(strcmp(cache->replacement_policy,"FIFO")==0){
-            fifo(cache,ptag,index,load_number,mem_entries,address,&t);
-        }else if(strcmp(cache->replacement_policy,"RAND")==0){
+            //fifo(cache,ptag,index,load_number,mem_entries,address,&t);
+            fifo(cache, ptag, index, load_number, mem_entries, address, &t);
+        }else if(strcmp(cache->replacement_policy,"RANDOM")==0){
             random_policy(cache,ptag,index,load_number,mem_entries,address,&t);
+        }
+        for (int k = 0; k < load_number; k++) {
+            //cache->sets[index].blocks[0].data[k] = mem_entries[address+k].value;
+            *result |=((int64_t)mem_entries[address+k].value<<(k*8));
+            
+        //printf("%d for cache->sets[index].blocks[0].data[%d] and mem_entries[%d+%d].value=%d\n",cache->sets[index].blocks[0].data[k],k,address,k,mem_entries[address+k].value);
         }
         fprintf(cache_out,"R: Address: 0x%x, Set: 0x%x, Miss, Tag: 0x%x, ",address,index,ptag);
         if(cache->sets[index].blocks[t].dirty==0){

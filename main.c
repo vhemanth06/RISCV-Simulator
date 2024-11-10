@@ -540,6 +540,12 @@ int main() {
                     cache.sets = malloc(cache.numsets * sizeof(cachesets));
                     for (int i = 0; i < cache.numsets; i++) {
                         cache.sets[i].blocks = malloc(cache.associativity * sizeof(cacheblock));
+                        cache.sets[i].fifo_queue = malloc(cache.associativity * sizeof(int));  // FIFO queue for tracking block order
+
+        // Initialize FIFO queue (set it to -1, indicating an empty state)
+                    for (int j = 0; j < cache.associativity; j++) {
+                        cache.sets[i].fifo_queue[j] = -1;  // No blocks are placed yet
+                    }
                         for(int j=0;j<cache.associativity;j++){
                             cache.sets[i].blocks[j].data=malloc(cache.block_size*sizeof(int));
                             cache.sets[i].blocks[j].valid=0;
@@ -551,6 +557,10 @@ int main() {
                     cache.numsets = 1;  
                     cache.sets = malloc(cache.numsets * sizeof(cachesets));
                     cache.sets[0].blocks = malloc(numblocks * sizeof(cacheblock)); 
+                    cache.sets[0].fifo_queue = malloc(numblocks * sizeof(int));  
+                    for (int j = 0; j < numblocks; j++) {
+                        cache.sets[0].fifo_queue[j] = -1;  // No blocks are placed yet
+                    }
                     for (int i = 0; i < numblocks; i++) {
                         cache.sets[0].blocks[i].data = malloc(cache.block_size * sizeof(int)); // Allocate memory for block data
                         cache.sets[0].blocks[i].valid = 0;  
@@ -566,7 +576,8 @@ int main() {
                             for(int j=0;j<cache.associativity;j++){
                                 free(cache.sets[i].blocks[j].data);
                             }
-                            free(cache.sets[i].blocks);    
+                            free(cache.sets[i].blocks); 
+                            free(cache.sets[i].fifo_queue);   
                         }
                         free(cache.sets);
                         }else{
@@ -574,6 +585,7 @@ int main() {
                                 free(cache.sets[0].blocks[j].data);
                             }
                             free(cache.sets[0].blocks);
+                            free(cache.sets[0].fifo_queue);
                             free(cache.sets);
                         }
                         cache_in=0;
