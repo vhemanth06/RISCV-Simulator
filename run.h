@@ -20,6 +20,7 @@ typedef struct {
 // } cache_block;
 typedef struct {
     bool valid;
+    bool dirty;
     unsigned int tag;
     int* data;
 } cacheblock;
@@ -37,5 +38,5 @@ typedef struct{
     char* wb_policy;
 } cache;
 
-void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter,Stack* call_stack,bool cache_in,cache cache,int cachesize);
+void run_instruction(char* line,char **tokens, long int register_value[],MemEntry  *mem_entries,int *pc_counter, char **label_names, int label_line_numbers[], int *counter_ptr,int label_position_iter,Stack* call_stack,bool cache_in,cache* cache,int cachesize,FILE* cache_out);
 #endif

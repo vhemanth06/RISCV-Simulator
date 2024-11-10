@@ -1,0 +1,8 @@
+cache_sim enable config.txt
+load input.s
+run
+cache_sim dump 1.out
+load input2.s
+run
+cache_sim dump 2.out
+exit

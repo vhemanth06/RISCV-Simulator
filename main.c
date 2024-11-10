@@ -45,6 +45,8 @@ int main() {
     Stack* call_stack;
     cache cache;
     int cache_size;
+    int numblocks;
+    FILE* cache_out;
     
     
     while (1) {  
@@ -55,6 +57,35 @@ int main() {
             pc_counter=0;
             counter=0;
             input = fopen(tokens_comm[1], "r");
+            if(cache_in==1){
+                char* filename=strdup(tokens_comm[1]);
+                //printf("%s\n",tokens_comm[1]);
+                //strcpy(filename,tokens_comm[1]);
+                char *dot = strrchr(filename, '.');
+                if (dot != NULL) {
+                    strcpy(dot, ".out");
+                } else {
+                    strcat(filename, ".out");
+                }
+                cache_out=fopen(filename,"w");
+                cache.hits=0;
+                cache.misses=0;
+                if(cache.associativity!=0){
+                    for (int i = 0; i < cache.numsets; i++) {
+                        for(int j=0;j<cache.associativity;j++){
+                            cache.sets[i].blocks[j].valid=0;
+                            cache.sets[i].blocks[j].tag=0;
+                            cache.sets[i].blocks[j].dirty=0;
+                        }    
+                    }
+                } else {
+                    for (int i = 0; i < numblocks; i++) {
+                        cache.sets[0].blocks[i].valid = 0;  
+                        cache.sets[0].blocks[i].tag = 0;
+                        cache.sets[0].blocks[i].dirty=0;    
+                    }
+                }
+            }
             memcpy(register_value,default_register_value,sizeof(register_value));
             if(input==NULL){
                 printf("error opening file\n");
@@ -227,10 +258,14 @@ int main() {
                         counter++;
                     }
                     run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter,
-                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack,cache_in,cache,cache_size);
+                              label_names, label_line_numbers, counter_ptr,label_position_iter,call_stack,cache_in,&cache,cache_size,cache_out);
                     register_value[0]=0;
                     if(counter==i-1){
                         pop(call_stack);
+                    }
+                    if(counter==i-1 && cache_in==1){
+                        printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f",cache.hits+cache.misses,cache.hits,cache.misses,
+                  (float)cache.hits/(cache.hits+cache.misses));
                     }
                     counter++;
                     if (breakpoint[counter+1]==1){
@@ -251,6 +286,7 @@ int main() {
                 printf("\n");
            } else if(strcmp(tokens_comm[0],"exit")==0){
                 printf("Exited the simulator\n");
+                free(mem_entries);
                 return 0;
            } else if(strcmp(tokens_comm[0],"mem")==0){
             char* endpointer;
@@ -427,10 +463,14 @@ int main() {
                     if (instruction == NULL) continue;
 
                     char **tokens = string_split(instruction);
-                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack,cache_in,cache,cache_size);
+                    run_instruction(instruction_copy,tokens, register_value,mem_entries,&pc_counter, label_names, label_line_numbers, stepper_ptr,label_position_iter,call_stack,cache_in,&cache,cache_size,cache_out);
                     register_value[0]=0;
                     if(stepper==i-1){
                         pop(call_stack);
+                    }
+                    if(stepper==i-1 && cache_in==1){
+                        printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f",cache.hits+cache.misses,cache.hits,cache.misses,
+                  (float)cache.hits/(cache.hits+cache.misses));
                     }
                     stepper++; 
                     counter = stepper;
@@ -492,7 +532,7 @@ int main() {
                   cache.associativity=atoi(array_for_config[2]);
                   cache.replacement_policy=strdup(array_for_config[3]);
                   cache.wb_policy=strdup(array_for_config[4]);
-                  int numblocks=cache_size/cache.block_size;
+                  numblocks=cache_size/cache.block_size;
                   cache.hits=0;
                   cache.misses=0;
                   if(cache.associativity!=0){
@@ -504,9 +544,20 @@ int main() {
                             cache.sets[i].blocks[j].data=malloc(cache.block_size*sizeof(int));
                             cache.sets[i].blocks[j].valid=0;
                             cache.sets[i].blocks[j].tag=0;
+                            cache.sets[i].blocks[j].dirty=0;
                         }    
                     }  
-                  } else{}  
+                  } else{
+                    cache.numsets = 1;  
+                    cache.sets = malloc(cache.numsets * sizeof(cachesets));
+                    cache.sets[0].blocks = malloc(numblocks * sizeof(cacheblock)); 
+                    for (int i = 0; i < numblocks; i++) {
+                        cache.sets[0].blocks[i].data = malloc(cache.block_size * sizeof(int)); // Allocate memory for block data
+                        cache.sets[0].blocks[i].valid = 0;  
+                        cache.sets[0].blocks[i].tag = 0;
+                        cache.sets[0].blocks[i].dirty=0;    
+                    }
+                  }  
                     printf("\n");
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"disable")==0){
                     if(cache_in==1){
@@ -519,7 +570,11 @@ int main() {
                         }
                         free(cache.sets);
                         }else{
-
+                            for(int j=0;j<numblocks;j++){
+                                free(cache.sets[0].blocks[j].data);
+                            }
+                            free(cache.sets[0].blocks);
+                            free(cache.sets);
                         }
                         cache_in=0;
                     } else {
@@ -546,16 +601,59 @@ int main() {
                                     cache.sets[i].blocks[j].valid=0;
                                 }    
                             }
+                        } else {
+                            for(int j=0;j<numblocks;j++){
+                                    cache.sets[0].blocks[j].valid=0;
+                                }
                         }
                    } else{
                      printf("Error!cache simulations is disabled\n");
                    }
                    printf("\n");
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"dump")==0){
-            
+                   
+                   if(cache_in==1){
+                        FILE* output=fopen(tokens_comm[2],"w");
+
+                        if(cache.associativity!=0){
+                            for (int i = 0; i < cache.numsets; i++) {
+                                for(int j=0;j<cache.associativity;j++){
+                                    if(cache.sets[i].blocks[j].valid==1){
+                                        fprintf(output,"Set: 0x%x, Tag: 0x%x, ",i,cache.sets[i].blocks[j].tag);
+                                        if(cache.sets[i].blocks[j].dirty==0){
+                                            fprintf(output,"Clean\n");
+                                        } else {
+                                            fprintf(output,"Dirty\n");
+                                        }
+                                    }  
+                                }    
+                            }
+                        } else {
+                            for(int j=0;j<numblocks;j++){
+                                if(cache.sets[0].blocks[j].valid==1){
+                                    fprintf(output,"Set: 0x0, Tag: 0x%x, ",cache.sets[0].blocks[j].tag);
+                                    if(cache.sets[0].blocks[j].dirty==0){
+                                        fprintf(output,"Clean\n");
+                                    } else {
+                                        fprintf(output,"Dirty\n");
+                                    }
+                                }  
+                            }
+                        }
+                   } else{
+                     printf("Error!cache simulations is disabled\n");
+                   }
+                   printf("\n");
+                   
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"stats")==0){
-            
-           } else {
+        //             int accesses=cache.hits+cache.misses;
+        //             float hit_rate=cache.hits/accesses;
+                if(cache_in==1){
+                    printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f",cache.hits+cache.misses,cache.hits,cache.misses,(float)cache.hits/(cache.hits+cache.misses));
+                } else {
+                    printf("Error!cache simulations is disabled\n");
+                }
+         } else {
             printf("Wrong input\n");
             printf("\n");
            }
