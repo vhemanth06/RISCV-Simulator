@@ -38,7 +38,7 @@ int main() {
     int counter = 0;
     counter_ptr = &counter;
     stepper_ptr = &stepper;
-     int i=0;
+     int i;
      int tnum=0;
      char line[MAX_INPUT_SIZE];
     char *array_of_lines[MAX_LINES];
@@ -48,7 +48,6 @@ int main() {
     int numblocks;
     FILE* cache_out;
     
-    
     while (1) {  
         fgets(command,sizeof(command),stdin);   
         FILE *input;   
@@ -56,6 +55,7 @@ int main() {
            if(strcmp(tokens_comm[0], "load") == 0){
             pc_counter=0;
             counter=0;
+            i=0;
             input = fopen(tokens_comm[1], "r");
             if(cache_in==1){
                 char* filename=strdup(tokens_comm[1]);
@@ -208,7 +208,8 @@ int main() {
                          if(tokens[1]!=NULL){
                             for(int k=1;tokens[k]!=NULL;k++){
                                 char* endpointer;
-                                long int num = strtol(tokens[k],&endpointer,0);
+                                long int num = strtoull(tokens[k],&endpointer,0);
+                                printf("%s\n",tokens[k]);
                                 int m = 0;
                                 for ( m = 0; m < 8; m++) {
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -221,7 +222,7 @@ int main() {
                         if (tokens[1] != NULL){
                             for (int k = 1; tokens[k] != NULL; k++){
                                 char *endpointer;
-                                long int num = strtol(tokens[k], &endpointer, 0);
+                                long int num = strtoull(tokens[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 4; m++){
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -234,7 +235,7 @@ int main() {
                         if (tokens[1] != NULL){
                             for (int k = 1; tokens[k] != NULL; k++){
                                 char *endpointer;
-                                long int num = strtol(tokens[k], &endpointer, 0);
+                                long int num = strtoull(tokens[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 2; m++){
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -247,7 +248,7 @@ int main() {
                         if (tokens[1] != NULL){
                             for (int k = 1; tokens[k] != NULL; k++){
                                 char *endpointer;
-                                long int num = strtol(tokens[k], &endpointer, 0);
+                                long int num = strtoull(tokens[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 1; m++){
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -264,7 +265,7 @@ int main() {
                         pop(call_stack);
                     }
                     if(counter==i-1 && cache_in==1){
-                        printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f",cache.hits+cache.misses,cache.hits,cache.misses,
+                        printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f\n",cache.hits+cache.misses,cache.hits,cache.misses,
                   (float)cache.hits/(cache.hits+cache.misses));
                     }
                     counter++;
@@ -298,6 +299,7 @@ int main() {
                 printf("\n");
            } else if (strcmp(tokens_comm[0], "step") == 0){
                 stepper = counter;
+                //printf("%d for i=%d\n",stepper,i);
                 if(stepper >= i){
                     printf("Nothing to step\n\n");
                     continue;
@@ -369,7 +371,7 @@ int main() {
                          if(pieces[1]!=NULL){
                             for(int k=1;pieces[k]!=NULL;k++){
                                 char* endpointer;
-                                long int num = strtol(pieces[k],&endpointer,0);
+                                long int num = strtoull(pieces[k],&endpointer,0);
                                 int m = 0;
                                 for ( m = 0; m < 8; m++) {
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -381,7 +383,7 @@ int main() {
                         if (pieces[1] != NULL){
                             for (int k = 1; pieces[k] != NULL; k++){
                                 char *endpointer;
-                                long int num = strtol(pieces[k], &endpointer, 0);
+                                long int num = strtoull(pieces[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 4; m++){
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -393,7 +395,7 @@ int main() {
                         if (pieces[1] != NULL){
                             for (int k = 1; pieces[k] != NULL; k++){
                                 char *endpointer;
-                                long int num = strtol(pieces[k], &endpointer, 0);
+                                long int num = strtoull(pieces[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 2; m++){
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -405,7 +407,7 @@ int main() {
                         if (pieces[1] != NULL){
                             for (int k = 1; pieces[k] != NULL; k++){
                                 char *endpointer;
-                                long int num = strtol(pieces[k], &endpointer, 0);
+                                long int num = strtoull(pieces[k], &endpointer, 0);
                                 int m = 0;
                                 for (m = 0; m < 1; m++){
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -450,6 +452,7 @@ int main() {
                         instruction = tokens_for_labels;
                         label=NULL;
                     }
+                    //printf("gh %d i=%d %s\n",stepper,i,instruction);
                     instruction=trim_space(instruction);
                     char *instruction_copy;
                     instruction_copy=deepCopyString(instruction);   
@@ -469,7 +472,7 @@ int main() {
                         pop(call_stack);
                     }
                     if(stepper==i-1 && cache_in==1){
-                        printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f",cache.hits+cache.misses,cache.hits,cache.misses,
+                        printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f\n",cache.hits+cache.misses,cache.hits,cache.misses,
                   (float)cache.hits/(cache.hits+cache.misses));
                     }
                     stepper++; 

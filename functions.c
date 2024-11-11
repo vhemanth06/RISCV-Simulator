@@ -63,6 +63,10 @@ char* deepCopyString(char* str) {
 }
 
 char* trim_space(char* string){
+    if (string == NULL) {
+        printf("null\n");
+        return NULL; // or handle it as needed
+    }
     while(isspace((unsigned char)*string)){
         string++;
     }

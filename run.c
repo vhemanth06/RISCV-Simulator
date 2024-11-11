@@ -51,10 +51,10 @@ void fifo(cache* cache, unsigned int ptag, int index, int loadnumber, MemEntry* 
             }
         }
         if (empty_block != -1) {
-            printf("runcheck1\n");
+            //printf("runcheck1\n");
             block_to_replace = empty_block;
         } else {
-            printf("runcheck2\n");
+            //printf("runcheck2\n");
             block_to_replace = cache->sets[index].fifo_queue[0]; 
         }
         for (int i = 0; i < cache->associativity - 1; i++) {
@@ -70,25 +70,25 @@ void fifo(cache* cache, unsigned int ptag, int index, int loadnumber, MemEntry* 
             }
         }
         if (empty_block != -1) {
-            printf("runcheck1\n");
+            //printf("runcheck1\n");
             block_to_replace = empty_block;
         } else {
             
             block_to_replace = cache->sets[index].fifo_queue[0];
-            printf("runcheck2 %d\n",block_to_replace);
+            //printf("runcheck2 %d\n",block_to_replace);
             
         }
         for (int i = 0; i < n - 1; i++) {
                 cache->sets[index].fifo_queue[i] = cache->sets[index].fifo_queue[i + 1];
         }
         cache->sets[index].fifo_queue[n - 1] = block_to_replace;
-        printf("%d\n",cache->sets[index].fifo_queue[n - 1]);
+        //printf("%d\n",cache->sets[index].fifo_queue[n - 1]);
     }
     
     
     cache->sets[index].blocks[block_to_replace].tag = ptag;
     cache->sets[index].blocks[block_to_replace].valid = 1;
-    printf("%d\n",block_to_replace);
+    //printf("%d\n",block_to_replace);
     for (int k = 0; k < cache->block_size; k++) {
         cache->sets[index].blocks[block_to_replace].data[k] = mem[address + k].value;
     }
@@ -98,7 +98,7 @@ void fifo(cache* cache, unsigned int ptag, int index, int loadnumber, MemEntry* 
 
 
 void lru(cache* cache,unsigned int ptag,int index,int loadnumber,MemEntry* mem,uint64_t address,int* t){
-
+    
 }
 void random_policy(cache* cache,unsigned int ptag,int index,int loadnumber,MemEntry* mem,uint64_t address,int* t,int n){
      srand(time(NULL));
@@ -129,7 +129,7 @@ void random_policy(cache* cache,unsigned int ptag,int index,int loadnumber,MemEn
             x=rand() % n;
         }
      }
-     printf("%d\n",x);
+     //printf("%d\n",x);
      cache->sets[index].blocks[x].tag = ptag;
     cache->sets[index].blocks[x].valid = 1;
     for (int k = 0; k < cache->block_size; k++) {
@@ -137,17 +137,35 @@ void random_policy(cache* cache,unsigned int ptag,int index,int loadnumber,MemEn
     }
     *t=x;
 }
-void cache_read(cache *cache,unsigned int ptag,int index, long int *result, int load_number, MemEntry  *mem_entries,uint64_t address,FILE* cache_out,unsigned int offset,int n){
+void cache_read(cache *cache,unsigned int ptag,int index, void *result, int load_number, MemEntry  *mem_entries,uint64_t address,FILE* cache_out,unsigned int offset,int n,int result_size){
      //int t;
-     
+    //  if(load_number==8){
+    //     int64_t* result1;
+    //  } else if(load_number==4){
+    //     int32_t* result1;
+    //  }
      if(cache->associativity!=0){
-        int i=(index)% cache->associativity;
-        index=index/cache->associativity;
+        //int i=(index)% cache->associativity;
+        //index=index/cache->associativity;
             //unsigned int tagcheck=cache->sets[index].blocks[i].tag;
+        for(int i=0;i<cache->associativity;i++){
             if(cache->sets[index].blocks[i].tag==ptag && cache->sets[index].blocks[i].valid==1){
             //printf("hit\n");
                 for(int k=0;k<load_number;k++){
-                    *result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    // *result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    if (result_size == sizeof(int64_t)){
+                        *(int64_t*)result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    }
+                    else if (result_size == sizeof(int32_t)){
+                        *(int32_t*)result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    }
+                    else if (result_size == sizeof(int16_t)){
+                        *(int16_t*)result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    }
+                    else if (result_size == sizeof(int8_t)){
+                        *(int8_t*)result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    }
+                    // printf("cache data in each bloack by byte is %d with result as %ld\n",cache->sets[index].blocks[i].data[k+offset],*result);
                 }
             fprintf(cache_out,"R: Address: 0x%x, Set: 0x%x, Hit, Tag: 0x%x, ",address,index,ptag);
             if(cache->sets[index].blocks[i].dirty==0){
@@ -157,8 +175,8 @@ void cache_read(cache *cache,unsigned int ptag,int index, long int *result, int 
             }
             cache->hits++;
             return ;
-            
-        }
+            }
+        }    
      } else {
         for(int i=0;i<n;i++){
         //printf("check %d\n",index);
@@ -167,7 +185,19 @@ void cache_read(cache *cache,unsigned int ptag,int index, long int *result, int 
             //printf("hit\n");
                 for(int k=0;k<load_number;k++){
                 //cache->sets[index].blocks[i].data[k]!=NULL){
-                    *result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    if (result_size == sizeof(int64_t)){
+                        *(int64_t*)result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    }
+                    else if (result_size == sizeof(int32_t)){
+                        *(int32_t*)result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    }
+                    else if (result_size == sizeof(int16_t)){
+                        *(int16_t*)result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    }
+                    else if (result_size == sizeof(int8_t)){
+                        *(int8_t*)result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
+                    }
+                    //*result |=((int64_t)cache->sets[index].blocks[i].data[k+offset]<<(k*8));
                     //printf("%ld for %d\n",*(result),cache->sets[index].blocks[i].data[k]);
                 // } else {
                 //     printf("error\n");
@@ -203,7 +233,16 @@ void cache_read(cache *cache,unsigned int ptag,int index, long int *result, int 
         }
         for (int k = 0; k < load_number; k++) {
             //cache->sets[index].blocks[0].data[k] = mem_entries[address+k].value;
-            *result |=((int64_t)mem_entries[address+k].value<<(k*8));
+            if (result_size == sizeof(int64_t)) {
+                    *(int64_t*)result |= ((int64_t)mem_entries[address + k].value << (k * 8));
+            } else if (result_size == sizeof(int32_t)) {
+                    *(int32_t*)result |= ((int64_t)mem_entries[address + k].value << (k * 8));
+            } else if (result_size == sizeof(int16_t)) {
+                    *(int16_t*)result |= ((int64_t)mem_entries[address + k].value << (k * 8));
+            } else if (result_size == sizeof(int8_t)) {
+                    *(int8_t*)result |= ((int64_t)mem_entries[address + k].value << (k * 8));
+            } 
+            //*result |=((int64_t)mem_entries[address+k].value<<(k*8));
             
         //printf("%d for cache->sets[index].blocks[0].data[%d] and mem_entries[%d+%d].value=%d\n",cache->sets[index].blocks[0].data[k],k,address,k,mem_entries[address+k].value);
         }
@@ -218,7 +257,16 @@ void cache_read(cache *cache,unsigned int ptag,int index, long int *result, int 
         cache->sets[index].blocks[0].valid = 1;
         for (int k = 0; k < load_number; k++) {
             
-            *result |=((int64_t)mem_entries[address+k].value<<(k*8));
+            if (result_size == sizeof(int64_t)) {
+                    *(int64_t*)result |= ((int64_t)mem_entries[address + k].value << (k * 8));
+            } else if (result_size == sizeof(int32_t)) {
+                    *(int32_t*)result |= ((int64_t)mem_entries[address + k].value << (k * 8));
+            } else if (result_size == sizeof(int16_t)) {
+                    *(int16_t*)result |= ((int64_t)mem_entries[address + k].value << (k * 8));
+            } else if (result_size == sizeof(int8_t)) {
+                    *(int8_t*)result |= ((int64_t)mem_entries[address + k].value << (k * 8));
+            }
+            //*result |=((int64_t)mem_entries[address+k].value<<(k*8));
             
         //printf("%d for cache->sets[index].blocks[0].data[%d] and mem_entries[%d+%d].value=%d\n",cache->sets[index].blocks[0].data[k],k,address,k,mem_entries[address+k].value);
         }
@@ -416,11 +464,11 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
                 uint32_t x=c_m<<byte_offset_bits;
                 uint32_t byte_offset=mem-x;
 
-                cache_read(cache,c_m,0,&result,8,mem_entries,mem,cache_out,byte_offset,n);
+                cache_read(cache,c_m,0,&result,8,mem_entries,mem,cache_out,byte_offset,n,sizeof(int64_t));
             }else{
                 int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
-                int index_bits = (int)(log((double)(cachesize/cache->block_size))/log(2));
-                //printf("%d %d %d %d\n",index_bits,cachesize,cache.block_size,byte_offset_bits);
+                int index_bits = (int)(log((double)(cachesize/(cache->block_size*cache->associativity)))/log(2));
+                //printf("%d %d %d %d\n",index_bits,cachesize,cache->block_size,byte_offset_bits);
                 //printf("%x\n",mem);
                 uint32_t c_m = mem >> (byte_offset_bits);
                 uint32_t x=c_m<<byte_offset_bits;
@@ -430,44 +478,11 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
                 unsigned int index = c_m - tag2;
                 //index=index/cache->associativity;
                 //printf("0x%x 0x%x\n",index,tag);
-                cache_read(cache,tag,index,&result,8,mem_entries,mem,cache_out,byte_offset,n);
+                cache_read(cache,tag,index,&result,8,mem_entries,mem,cache_out,byte_offset,n,sizeof(int64_t));
                 //printf("hits=%d,misses=%d\n",cache->hits,cache->misses);
             }
         }       
-        // else{
-        //     if (associativity == 1){
-        //         int byte_offset_bits = (int)log2((double)block_size);
-        //         int index_bits = (int)log2((double)max_blocks);
-                
-        //         uint64_t c_m = mem >> (byte_offset_bits);
-        //         int tag = c_m >> (index_bits);
-        //         tag = tag << (index_bits);
-        //         int index = c_m - tag;
-        //         bool h_m2 = 0;
-        //         for (int i = 0; i < block_size; ++i){
-        //             if (cache_mem[index][i].valid_bit == 1){
-        //                 if (cache_mem[index][i].address == mem){
-        //                     //increase hit
-        //                     h_m2 = 1;
-        //                     result=result|mem_entries[cache_mem[index][i].address].value;
-        //                 }
-        //             } else{
-        //                 cache_mem[index][i].address=mem+i;
-        //             }
-        //         }
-        //         if (h_m2 == 0){
-        //             for (int i = 0; i < block_size; ++i){
-        //                 cache_mem[index][i].address = mem+i;
-        //             }
-
-        //         }
-        //         //cache_mem[im][i].address=mem+i
-        //     } else if(associativity==0){
-                   
-        //     } else {
-
-        //     }   
-        // }
+       
         register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
@@ -477,11 +492,37 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int rd = register_finder(tokens[1]);
         int rs1 = register_finder(tokens[3]);
         int num = atoi(tokens[2]);
+        // int32_t result = 0;
         int32_t result = 0;
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
-        for(int k=0;k<4;k++){
-            result |=((int64_t)mem_entries[mem+k].value<<(k*8));
-        }
+        // for(int k=0;k<4;k++){
+        //     result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+        // }
+        if (cache_in == 0){
+            for(int k=0;k<4;k++){
+                result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+            }
+            
+        } else{
+            int n=cachesize/cache->block_size;
+            if(cache->associativity==0){
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                cache_read(cache,c_m,0,&result,4,mem_entries,mem,cache_out,byte_offset,n,sizeof(int32_t));
+            }else{
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                int index_bits = (int)(log((double)(cachesize/(cache->block_size*cache->associativity)))/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                unsigned int tag = c_m >> (index_bits);
+                unsigned int tag2 = tag << (index_bits);
+                unsigned int index = c_m - tag2;
+                cache_read(cache,tag,index,&result,4,mem_entries,mem,cache_out,byte_offset,n,sizeof(int32_t));
+            }
+        } 
         register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
@@ -492,9 +533,36 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int num = atoi(tokens[2]);
         int16_t result = 0;
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
-        for(int k=0;k<2;k++){
-            result |=((int64_t)mem_entries[mem+k].value<<(k*8));
-        }
+        // for(int k=0;k<2;k++){
+        //     result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+        // }
+        if (cache_in == 0){
+            for(int k=0;k<2;k++){
+                result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+            }
+            
+        } else{
+            int n=cachesize/cache->block_size;
+            if(cache->associativity==0){
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                cache_read(cache,c_m,0,&result,2,mem_entries,mem,cache_out,byte_offset,n,sizeof(int16_t));
+            }else{
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                int index_bits = (int)(log((double)(cachesize/(cache->block_size*cache->associativity)))/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                unsigned int tag = c_m >> (index_bits);
+                unsigned int tag2 = tag << (index_bits);
+                unsigned int index = c_m - tag2;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,tag,index,&result,2,mem_entries,mem,cache_out,byte_offset,n,sizeof(int16_t));
+                //result=result1;
+            }
+        } 
         register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
@@ -505,9 +573,38 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int num = atoi(tokens[2]);
         int8_t result = 0;
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
-        for(int k=0;k<1;k++){
-            result |=((int64_t)mem_entries[mem+k].value<<(k*8));
-        }
+        // for(int k=0;k<1;k++){
+        //     result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+        // }
+        if (cache_in == 0){
+            for(int k=0;k<1;k++){
+                result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+            }
+            
+        } else{
+            int n=cachesize/cache->block_size;
+            if(cache->associativity==0){
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,c_m,0,&result,1,mem_entries,mem,cache_out,byte_offset,n,sizeof(int8_t));
+                //result=result1;
+            }else{
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                int index_bits = (int)(log((double)(cachesize/(cache->block_size*cache->associativity)))/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                unsigned int tag = c_m >> (index_bits);
+                unsigned int tag2 = tag << (index_bits);
+                unsigned int index = c_m - tag2;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,tag,index,&result,1,mem_entries,mem,cache_out,byte_offset,n,sizeof(int8_t));
+                //result=result1;
+            }
+        } 
         register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
@@ -518,9 +615,38 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int num = atoi(tokens[2]);
         uint32_t result = 0;
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
-        for(int k=0;k<4;k++){
-            result |=((int64_t)mem_entries[mem+k].value<<(k*8));
-        }
+        // for(int k=0;k<4;k++){
+        //     result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+        // }
+        if (cache_in == 0){
+            for(int k=0;k<4;k++){
+                result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+            }
+            
+        } else{
+            int n=cachesize/cache->block_size;
+            if(cache->associativity==0){
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,c_m,0,&result,4,mem_entries,mem,cache_out,byte_offset,n,sizeof(int32_t));
+                //result=result1;
+            }else{
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                int index_bits = (int)(log((double)(cachesize/(cache->block_size*cache->associativity)))/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                unsigned int tag = c_m >> (index_bits);
+                unsigned int tag2 = tag << (index_bits);
+                unsigned int index = c_m - tag2;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,tag,index,&result,4,mem_entries,mem,cache_out,byte_offset,n,sizeof(int32_t));
+                //result=result1;
+            }
+        } 
         register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
@@ -531,9 +657,38 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int num = atoi(tokens[2]);
         uint16_t result = 0;
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
-        for(int k=0;k<2;k++){
-            result |=((int64_t)mem_entries[mem+k].value<<(k*8));
-        }
+        // for(int k=0;k<2;k++){
+        //     result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+        // }
+        if (cache_in == 0){
+            for(int k=0;k<2;k++){
+                result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+            }
+            
+        } else{
+            int n=cachesize/cache->block_size;
+            if(cache->associativity==0){
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,c_m,0,&result,2,mem_entries,mem,cache_out,byte_offset,n,sizeof(int16_t));
+                //result=result1;
+            }else{
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                int index_bits = (int)(log((double)(cachesize/(cache->block_size*cache->associativity)))/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                unsigned int tag = c_m >> (index_bits);
+                unsigned int tag2 = tag << (index_bits);
+                unsigned int index = c_m - tag2;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,tag,index,&result,2,mem_entries,mem,cache_out,byte_offset,n,sizeof(int16_t));
+                //result=result1;
+            }
+        } 
         register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
@@ -544,9 +699,38 @@ void run_instruction(char* line,char **tokens, long int register_value[],MemEntr
         int num = atoi(tokens[2]);
         uint8_t result = 0;
         uint64_t mem = (uint64_t)(register_value[rs1] + num);
-        for(int k=0;k<1;k++){
-            result |=((int64_t)mem_entries[mem+k].value<<(k*8));
-        }
+        // for(int k=0;k<1;k++){
+        //     result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+        // }
+        if (cache_in == 0){
+            for(int k=0;k<1;k++){
+                result |=((int64_t)mem_entries[mem+k].value<<(k*8));
+            }
+            
+        } else{
+            int n=cachesize/cache->block_size;
+            if(cache->associativity==0){
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,c_m,0,&result,1,mem_entries,mem,cache_out,byte_offset,n,sizeof(int8_t));
+                //result=result1;
+            }else{
+                int byte_offset_bits = (int)(log((double)cache->block_size)/log(2));
+                int index_bits = (int)(log((double)(cachesize/(cache->block_size*cache->associativity)))/log(2));
+                uint32_t c_m = mem >> (byte_offset_bits);
+                uint32_t x=c_m<<byte_offset_bits;
+                uint32_t byte_offset=mem-x;
+                unsigned int tag = c_m >> (index_bits);
+                unsigned int tag2 = tag << (index_bits);
+                unsigned int index = c_m - tag2;
+                //int64_t result1=(int64_t)result;
+                cache_read(cache,tag,index,&result,1,mem_entries,mem,cache_out,byte_offset,n,sizeof(int8_t));
+                //result=result1;
+            }
+        } 
         register_value[rd] = result;
         call_stack->line_num[call_stack->top_index]=*counter_ptr+1;
         printf("Executed %s; PC=0x%08x\n",line,*pc_counter);
