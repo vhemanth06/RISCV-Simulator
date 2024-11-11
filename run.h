@@ -16,6 +16,7 @@ typedef struct {
     bool dirty;
     unsigned int tag;
     int* data;
+    int lru_counter;
 } cacheblock;
 typedef struct {
     cacheblock* blocks;

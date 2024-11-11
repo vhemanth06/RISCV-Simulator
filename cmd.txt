@@ -1,13 +1,6 @@
 cache_sim enable config.txt
 load input.s
-step
-step
-step
-step
-step
-step
-step
-step
+run
 regs
 cache_sim dump 1.out
 exit

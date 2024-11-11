@@ -76,13 +76,15 @@ int main() {
                             cache.sets[i].blocks[j].valid=0;
                             cache.sets[i].blocks[j].tag=0;
                             cache.sets[i].blocks[j].dirty=0;
+                            cache.sets[i].blocks[j].lru_counter=0;
                         }    
                     }
                 } else {
                     for (int i = 0; i < numblocks; i++) {
                         cache.sets[0].blocks[i].valid = 0;  
                         cache.sets[0].blocks[i].tag = 0;
-                        cache.sets[0].blocks[i].dirty=0;    
+                        cache.sets[0].blocks[i].dirty=0; 
+                        cache.sets[0].blocks[i].lru_counter=0;   
                     }
                 }
             }
@@ -209,7 +211,7 @@ int main() {
                             for(int k=1;tokens[k]!=NULL;k++){
                                 char* endpointer;
                                 long int num = strtoull(tokens[k],&endpointer,0);
-                                printf("%s\n",tokens[k]);
+                                //printf("%s\n",tokens[k]);
                                 int m = 0;
                                 for ( m = 0; m < 8; m++) {
                                     mem_entries[d_address+m].value = (num >> (m * 8)) & 0xFF;
@@ -554,6 +556,7 @@ int main() {
                             cache.sets[i].blocks[j].valid=0;
                             cache.sets[i].blocks[j].tag=0;
                             cache.sets[i].blocks[j].dirty=0;
+                            cache.sets[i].blocks[j].lru_counter=0;
                         }    
                     }  
                   } else{
@@ -568,7 +571,8 @@ int main() {
                         cache.sets[0].blocks[i].data = malloc(cache.block_size * sizeof(int)); // Allocate memory for block data
                         cache.sets[0].blocks[i].valid = 0;  
                         cache.sets[0].blocks[i].tag = 0;
-                        cache.sets[0].blocks[i].dirty=0;    
+                        cache.sets[0].blocks[i].dirty=0;
+                        cache.sets[0].blocks[i].lru_counter=0;    
                     }
                   }  
                     printf("\n");
@@ -633,7 +637,7 @@ int main() {
                         if(cache.associativity!=0){
                             for (int i = 0; i < cache.numsets; i++) {
                                 for(int j=0;j<cache.associativity;j++){
-                                    if(cache.sets[i].blocks[j].valid==1){
+                                    if(cache.sets[i].blocks[j].valid==1 ){
                                         fprintf(output,"Set: 0x%x, Tag: 0x%x, ",i,cache.sets[i].blocks[j].tag);
                                         if(cache.sets[i].blocks[j].dirty==0){
                                             fprintf(output,"Clean\n");

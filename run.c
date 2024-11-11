@@ -16,6 +16,7 @@ typedef struct {
     bool dirty;
     unsigned int tag;
     int* data;
+    int lru_counter;
 } cacheblock;
 typedef struct {
     cacheblock* blocks;
@@ -40,6 +41,25 @@ typedef struct{
 //     }
 //     *t=x;
 // }
+void lru_counter_update(cache* cache, int index, int block_index,int n) {
+    if(cache->associativity!=0){
+        for (int i = 0; i < cache->associativity; i++) {
+            if (i != block_index && cache->sets[index].blocks[i].valid==1) {
+                cache->sets[index].blocks[i].lru_counter++;
+            }
+        }
+        cache->sets[index].blocks[block_index].lru_counter = 0; 
+    } else {
+        for (int i = 0; i < n; i++) {
+            if (i != block_index && cache->sets[index].blocks[i].valid==1) {
+                cache->sets[index].blocks[i].lru_counter++;
+            }
+        }
+        cache->sets[index].blocks[block_index].lru_counter = 0; 
+    }
+     
+}
+
 void fifo(cache* cache, unsigned int ptag, int index, int loadnumber, MemEntry* mem, uint64_t address, int* t,int n) {
     int block_to_replace = -1;  
     int empty_block = -1;
@@ -97,12 +117,48 @@ void fifo(cache* cache, unsigned int ptag, int index, int loadnumber, MemEntry* 
 }
 
 
-void lru(cache* cache,unsigned int ptag,int index,int loadnumber,MemEntry* mem,uint64_t address,int* t){
+void lru(cache* cache,unsigned int ptag,int index,int loadnumber,MemEntry* mem,uint64_t address,int* t,int n){
+    int lru_index = -1;
+    int max_counter = -1;
+
+    if(cache->associativity!=0){
+        for (int i = 0; i < cache->associativity; i++) {
+            if (cache->sets[index].blocks[i].valid == 0) {
+                lru_index = i;  
+                break;
+            } else if (cache->sets[index].blocks[i].lru_counter > max_counter) {
+                max_counter = cache->sets[index].blocks[i].lru_counter;
+                lru_index = i;
+            }
+        }
+    } else {
+        for (int i = 0; i < n; i++) {
+            if (cache->sets[index].blocks[i].valid == 0) {
+                lru_index = i;  
+                break;
+            } else if (cache->sets[index].blocks[i].lru_counter > max_counter) {
+                max_counter = cache->sets[index].blocks[i].lru_counter;
+                lru_index = i;
+            }
+        }
+    }
     
+
+    // Update the selected block (either empty or least recently used)
+    cache->sets[index].blocks[lru_index].tag = ptag;
+    cache->sets[index].blocks[lru_index].valid = 1;
+    cache->sets[index].blocks[lru_index].lru_counter = 0;  // Reset for the newest access
+
+    // Copy data from memory to the cache block
+    for (int k = 0; k < cache->block_size; k++) {
+        cache->sets[index].blocks[lru_index].data[k] = mem[address + k].value;
+    }
+
+    *t = lru_index;
 }
 void random_policy(cache* cache,unsigned int ptag,int index,int loadnumber,MemEntry* mem,uint64_t address,int* t,int n){
      srand(time(NULL));
-     int x;
+     int random_block=-1;
      int empty_block=-1;
      if(cache->associativity!=0){
         for (int i = 0; i < cache->associativity; i++) {
@@ -112,9 +168,9 @@ void random_policy(cache* cache,unsigned int ptag,int index,int loadnumber,MemEn
             }
         }
         if (empty_block != -1) {
-            x = empty_block;
+            random_block = empty_block;
         }else{
-            x=rand() % cache->associativity;
+            random_block=rand() % cache->associativity;
         }        
      } else {
         for (int i = 0; i < n; i++) {
@@ -124,18 +180,18 @@ void random_policy(cache* cache,unsigned int ptag,int index,int loadnumber,MemEn
             }
         }
         if (empty_block != -1) {
-            x = empty_block;
+            random_block = empty_block;
         }else{
-            x=rand() % n;
+            random_block=rand() % n;
         }
      }
      //printf("%d\n",x);
-     cache->sets[index].blocks[x].tag = ptag;
-    cache->sets[index].blocks[x].valid = 1;
+     cache->sets[index].blocks[random_block].tag = ptag;
+    cache->sets[index].blocks[random_block].valid = 1;
     for (int k = 0; k < cache->block_size; k++) {
-        cache->sets[index].blocks[x].data[k] = mem[address+k].value;
+        cache->sets[index].blocks[random_block].data[k] = mem[address+k].value;
     }
-    *t=x;
+    *t=random_block;
 }
 void cache_read(cache *cache,unsigned int ptag,int index, void *result, int load_number, MemEntry  *mem_entries,uint64_t address,FILE* cache_out,unsigned int offset,int n,int result_size){
      //int t;
@@ -173,7 +229,8 @@ void cache_read(cache *cache,unsigned int ptag,int index, void *result, int load
             }else{
                 fprintf(cache_out,"Dirty\n");
             }
-            cache->hits++;
+            lru_counter_update(cache,index,i,n);
+;            cache->hits++;
             return ;
             }
         }    
@@ -212,6 +269,7 @@ void cache_read(cache *cache,unsigned int ptag,int index, void *result, int load
                 fprintf(cache_out,"Dirty\n");
             }
             cache->hits++;
+            lru_counter_update(cache,index,i,n);
             return ;
             // for(int j=0;j<cache.block_size;j++){
             // }
@@ -221,10 +279,11 @@ void cache_read(cache *cache,unsigned int ptag,int index, void *result, int load
      
      
      cache->misses++;
+     
      int t;
      if(cache->associativity!=1){
         if(strcmp(cache->replacement_policy,"LRU")==0){
-            //lru();
+            lru(cache,ptag,index,load_number,mem_entries,address,&t,n);
         }else if(strcmp(cache->replacement_policy,"FIFO")==0){
             //fifo(cache,ptag,index,load_number,mem_entries,address,&t);
             fifo(cache, ptag, index, load_number, mem_entries, address, &t,n);
@@ -246,6 +305,7 @@ void cache_read(cache *cache,unsigned int ptag,int index, void *result, int load
             
         //printf("%d for cache->sets[index].blocks[0].data[%d] and mem_entries[%d+%d].value=%d\n",cache->sets[index].blocks[0].data[k],k,address,k,mem_entries[address+k].value);
         }
+        lru_counter_update(cache,index,t,n);
         fprintf(cache_out,"R: Address: 0x%x, Set: 0x%x, Miss, Tag: 0x%x, ",address,index,ptag);
         if(cache->sets[index].blocks[t].dirty==0){
             fprintf(cache_out,"Clean\n");
@@ -273,6 +333,7 @@ void cache_read(cache *cache,unsigned int ptag,int index, void *result, int load
         for(int k=0;k<cache->block_size;k++){
             cache->sets[index].blocks[0].data[k] = mem_entries[address+k].value;
         }
+        lru_counter_update(cache,index,t,n);
         fprintf(cache_out,"R: Address: 0x%x, Set: 0x%x, Miss, Tag: 0x%x, ",address,index,ptag);
         if(cache->sets[index].blocks[0].dirty==0){
             fprintf(cache_out,"Clean\n");
