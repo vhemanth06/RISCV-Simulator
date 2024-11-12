@@ -63,9 +63,9 @@ int main() {
                 //strcpy(filename,tokens_comm[1]);
                 char *dot = strrchr(filename, '.');
                 if (dot != NULL) {
-                    strcpy(dot, ".out");
+                    strcpy(dot, ".output");
                 } else {
-                    strcat(filename, ".out");
+                    strcat(filename, ".output");
                 }
                 cache_out=fopen(filename,"w");
                 cache.hits=0;
@@ -597,7 +597,7 @@ int main() {
                         }
                         cache_in=0;
                     } else {
-                        printf("Error!cache simulations is disabled\n");
+                        printf("Error!cache simulation is disabled.\n");
                     }
                     printf("\n");
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"status")==0){
@@ -617,16 +617,34 @@ int main() {
                         if(cache.associativity!=0){
                             for (int i = 0; i < cache.numsets; i++) {
                                 for(int j=0;j<cache.associativity;j++){
+                                    if(cache.sets[i].blocks[j].dirty==1 && cache.sets[i].blocks[j].valid==1){
+                                        int byte_offset_bits = (int)(log((double)cache.block_size)/log(2));
+                                        int index_bits = (int)(log((double)(cache_size/(cache.block_size*cache.associativity)))/log(2));
+                                        unsigned int evicted_address= (cache.sets[i].blocks[j].tag << (index_bits+byte_offset_bits)) | (i<< byte_offset_bits);
+                                        for (int k = 0; k < cache.block_size; k++) {
+                                            mem_entries[evicted_address + k].value = cache.sets[i].blocks[j].data[k];
+                                        }
+                                        cache.sets[i].blocks[j].dirty=0;
+                                    }
                                     cache.sets[i].blocks[j].valid=0;
                                 }    
                             }
                         } else {
                             for(int j=0;j<numblocks;j++){
+                                    if(cache.sets[0].blocks[j].dirty==1 && cache.sets[0].blocks[j].valid==1){
+                                        int byte_offset_bits = (int)(log((double)cache.block_size)/log(2));
+                                        //int index_bits = (int)(log((double)(cache_size/(cache.block_size*cache.associativity)))/log(2));
+                                        unsigned int evicted_address= (cache.sets[0].blocks[j].tag << (byte_offset_bits)) ;
+                                        for (int k = 0; k < cache.block_size; k++) {
+                                            mem_entries[evicted_address + k].value = cache.sets[0].blocks[j].data[k];
+                                        }
+                                        cache.sets[0].blocks[j].dirty=0;
+                                    }
                                     cache.sets[0].blocks[j].valid=0;
                                 }
                         }
                    } else{
-                     printf("Error!cache simulations is disabled\n");
+                     printf("Error!cache simulation is disabled.\n");
                    }
                    printf("\n");
            } else if(strcmp(tokens_comm[0],"cache_sim")==0 && strcmp(tokens_comm[1],"dump")==0){
@@ -660,7 +678,7 @@ int main() {
                             }
                         }
                    } else{
-                     printf("Error!cache simulations is disabled\n");
+                     printf("Error!cache simulation is disabled.\n");
                    }
                    printf("\n");
                    
@@ -668,10 +686,11 @@ int main() {
         //             int accesses=cache.hits+cache.misses;
         //             float hit_rate=cache.hits/accesses;
                 if(cache_in==1){
-                    printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f",cache.hits+cache.misses,cache.hits,cache.misses,(float)cache.hits/(cache.hits+cache.misses));
+                    printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f\n",cache.hits+cache.misses,cache.hits,cache.misses,(float)cache.hits/(cache.hits+cache.misses));
                 } else {
-                    printf("Error!cache simulations is disabled\n");
+                    printf("Error!cache simulation is disabled.\n");
                 }
+                printf("\n");
          } else {
             printf("Wrong input\n");
             printf("\n");
