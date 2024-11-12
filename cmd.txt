@@ -1,12 +1,9 @@
 cache_sim enable config.txt
-load input.s
-run
-cache_sim dump 1.out
-regs
-cache_sim stats
-cache_sim status
 load input2.s
+step
+mem 0x10000 75
 run
 cache_sim dump 2.out
 regs
+mem 0x10000 75
 exit
