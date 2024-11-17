@@ -942,7 +942,12 @@ int main()
         {
             if (cache_in == 1)
             {
-                printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f\n", cache.hits + cache.misses, cache.hits, cache.misses, (float)cache.hits / (cache.hits + cache.misses));
+                if(cache.hits + cache.misses ==0){
+                    printf("D-cache statistics: Accesses=0, Hit=0, Miss=0, Hit Rate=0.0\n");
+                } else {
+                    printf("D-cache statistics: Accesses=%d, Hit=%d, Miss=%d, Hit Rate=%.2f\n", cache.hits + cache.misses, cache.hits, cache.misses, (float)cache.hits / (cache.hits + cache.misses));
+                }
+                
             }
             else
             {
